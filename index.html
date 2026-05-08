@@ -1,0 +1,3515 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Quản Lý Ngân Sách & Tiến Độ - Ban QLDA Hà Tĩnh</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #1f2a44;
+      --muted: #6b7890;
+      --primary: #1f6feb;
+      --success: #1f9d55;
+      --warning: #e0a800;
+      --danger: #d93025;
+      --border: #e6ebf2;
+      --shadow: 0 6px 18px rgba(28, 41, 61, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #0f274d;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+    }
+
+    .topbar h1 {
+      font-size: 18px;
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: .2px;
+    }
+
+    .meta {
+      font-size: 13px;
+      opacity: .9;
+    }
+
+    .container {
+      max-width: 1320px;
+      margin: 20px auto 40px;
+      padding: 0 16px;
+      display: grid;
+      gap: 20px;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%);
+      border: 1px solid #d6e0ec;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #3a5273;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .25s ease;
+      box-shadow: 0 2px 8px rgba(31, 41, 68, .04);
+    }
+
+    .tab-btn:hover {
+      background: linear-gradient(180deg, #f0f6ff 0%, #e3efff 100%);
+      border-color: #8fb8eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(31, 111, 235, .12);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #1f6feb 0%, #155ab5 100%);
+      border-color: #1f6feb;
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(31, 111, 235, .3);
+    }
+
+    .tab-icon {
+      font-size: 16px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page {
+      background: #eef3fa;
+      border: 1px solid #dbe4f2;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .page-title {
+      margin: 0 0 14px;
+      font-size: 20px;
+      color: #0f274d;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #dce9ff;
+      color: #104fbd;
+      font-weight: 600;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .big {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .sub {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .sub div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub b {
+      font-weight: 700;
+    }
+
+    .pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pill.ok { background: #d1fae5; color: #065f46; }
+    .pill.warn { background: #fef3c7; color: #92400e; }
+    .pill.late { background: #fee2e2; color: #991b1b; }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .filter-icon {
+      font-size: 18px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .filter-group select {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .btn-apply, .btn-reset {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-apply {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-apply:hover {
+      background: #16a34a;
+      transform: translateY(-1px);
+    }
+
+    .btn-reset {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .btn-reset:hover {
+      background: #cbd5e1;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    /* Chart Container */
+    .chart-shell {
+      height: 320px;
+      position: relative;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    thead {
+      background: linear-gradient(180deg, #f8fbff 0%, #f0f5fb 100%);
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      color: var(--muted);
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    tbody tr:hover {
+      background: #f8fbff;
+    }
+
+    /* Status Badges */
+    .status {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .st-todo { background: #f0f2f6; color: #555; }
+    .st-doing { background: #e7f0ff; color: #2456a8; }
+    .st-done { background: #def5e5; color: #1d7f45; }
+    .st-warning { background: #fff3d6; color: #9b6b00; }
+    .st-danger { background: #ffdfe0; color: #b42318; }
+
+    /* Progress Bar */
+    .progress-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #06b6d4, #3b82f6);
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+
+    /* Project Cards for Page 2 */
+    .project-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(28, 41, 61, .15);
+    }
+
+    .project-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    .project-card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 4px;
+    }
+
+    .project-card-code {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .project-card-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .project-stat-item {
+      background: #f8fbff;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #e8f0fe;
+    }
+
+    .project-stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .project-stat-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .project-stat-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Package List in Project Card */
+    .package-mini-list {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .package-mini-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .package-mini-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .package-mini-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .package-mini-progress {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Detail Page Styles */
+    .detail-header {
+      background: linear-gradient(135deg, #1f6feb 0%, #155ab5 100%);
+      color: #fff;
+      padding: 24px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(31, 111, 235, .25);
+    }
+
+    .detail-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0 0 8px;
+    }
+
+    .detail-code {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .detail-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .detail-kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .detail-kpi-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .detail-kpi-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .detail-kpi-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-icon {
+      font-size: 20px;
+    }
+
+    /* Phase Cards */
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .phase-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .phase-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .phase-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 4px;
+    }
+
+    .phase-card-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .phase-card-icon {
+      font-size: 28px;
+    }
+
+    .phase-card-stats {
+      display: grid;
+      gap: 10px;
+    }
+
+    .phase-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+
+    .phase-stat-label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .phase-stat-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Source Cards */
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .source-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 2px solid #bae6fd;
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .source-card.state {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-color: #fcd34d;
+    }
+
+    .source-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .source-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .source-card-icon {
+      font-size: 24px;
+    }
+
+    .source-card-amount {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .source-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    /* Package Detail List */
+    .package-detail-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .package-detail-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      transition: all 0.3s;
+    }
+
+    .package-detail-card:hover {
+      transform: translateX(4px);
+      border-color: var(--primary);
+    }
+
+    .package-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .package-detail-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 4px;
+    }
+
+    .package-detail-code {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .package-detail-progress {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .package-detail-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .package-meta-item {
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .package-meta-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .package-meta-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .phase-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .project-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs {
+        gap: 6px;
+      }
+
+      .tab-btn {
+        padding: 10px 14px;
+        font-size: 13px;
+      }
+    }
+
+    /* === HEATMAP & ANIMATION ENHANCEMENTS === */
+    table tbody tr {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    table tbody tr:hover:not(.cost-package-row) {
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .view-toggle-btn {
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .view-toggle-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25);
+    }
+
+    .view-toggle-btn:active {
+      transform: translateY(0);
+    }
+
+    @keyframes progressGrow {
+      from { width: 0; opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .progress-fill {
+      animation: progressGrow 1s ease-out;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .kpi-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #3b82f6, #2563eb);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+    }
+
+    /* Tab Button Enhancements */
+    .page2-subtab-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page2-subtab-btn:hover:not(.active) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .page2-subtab-btn.active {
+      background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+      color: white !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+      border: none !important;
+    }
+
+    .page2-subtab-btn:active {
+      transform: translateY(0);
+    }
+
+    @keyframes shimmerTab {
+      0% { left: -100%; }
+      100% { left: 200%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>BÁO CÁO QUẢN LÝ NGÂN SÁCH & TIẾN ĐỘ DỰ ÁN</h1>
+    <div class="meta">Kỳ báo cáo: Q1/2026 • Cập nhật: 17/03/2026</div>
+  </div>
+
+  <div class="container">
+    <!-- TABS NAVIGATION -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openTab(event, 'page1')">
+        <span class="tab-icon">📊</span>TRANG 1: TỔNG QUAN
+      </button>
+      <button class="tab-btn" onclick="openTab(event, 'page2')">
+        <span class="tab-icon">📁</span>TRANG 2: QUẢN LÝ DỰ ÁN
+      </button>
+      <button class="tab-btn" onclick="openTab(event, 'page3')">
+        <span class="tab-icon">📋</span>TRANG 3: CHI TIẾT DỰ ÁN
+      </button>
+    </div>
+
+    <!-- PAGE 1: TỔNG QUAN (GIỮ NGUYÊN FILE GỐC) -->
+    <div id="page1" class="tab-content active">
+      <!-- BỘ LỌC TRANG 1 -->
+      <div class="filter-bar">
+        <span class="filter-icon">🔍</span>
+        
+        <div class="filter-group">
+          <label for="filterYear">Năm:</label>
+          <select id="filterYear">
+            <option value="2026" selected>2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterMonth">Tháng:</label>
+          <select id="filterMonth">
+            <option value="all">Tất cả</option>
+            <option value="1">Tháng 1</option>
+            <option value="2">Tháng 2</option>
+            <option value="3" selected>Tháng 3</option>
+            <option value="4">Tháng 4</option>
+            <option value="5">Tháng 5</option>
+            <option value="6">Tháng 6</option>
+            <option value="7">Tháng 7</option>
+            <option value="8">Tháng 8</option>
+            <option value="9">Tháng 9</option>
+            <option value="10">Tháng 10</option>
+            <option value="11">Tháng 11</option>
+            <option value="12">Tháng 12</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterQuarter">Quý:</label>
+          <select id="filterQuarter">
+            <option value="all">Tất cả</option>
+            <option value="Q1" selected>Q1</option>
+            <option value="Q2">Q2</option>
+            <option value="Q3">Q3</option>
+            <option value="Q4">Q4</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterStatus">Trạng thái:</label>
+          <select id="filterStatus">
+            <option value="all">Tất cả</option>
+            <option value="ontrack">Đúng tiến độ</option>
+            <option value="delayed">Chậm tiến độ</option>
+            <option value="over">Vượt giải ngân</option>
+            <option value="done">Hoàn thành</option>
+          </select>
+        </div>
+
+        <button class="btn-apply" onclick="applyFilters()">✔ Áp dụng</button>
+        <button class="btn-reset" onclick="resetFilters()">↻ Đặt lại</button>
+      </div>
+
+      <section class="page">
+        <h2 class="page-title">TỔNG QUAN <span class="badge">Dashboard điều hành</span></h2>
+
+        <div class="kpi-grid">
+          <article class="card">
+            <h3>Ngân sách tổng</h3>
+            <div class="big">422 tỷ</div>
+            <div class="sub">
+              <div>Đã sử dụng: <b>223.16 tỷ</b></div>
+              <div>Còn lại: <b>198.84 tỷ</b></div>
+              <div>% sử dụng: <b>52.9%</b><span class="pill ok">Tốt</span></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Tiến độ giải ngân</h3>
+            <div class="big">52.9%</div>
+            <div class="sub">
+              <div>Kế hoạch: <b>235 tỷ</b></div>
+              <div>Thực tế: <b>223.16 tỷ</b></div>
+              <div>Chênh lệch: <b>-11.84 tỷ</b><span class="pill warn">Theo dõi</span></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Tiến độ</h3>
+            <div class="big">51.2%</div>
+            <div class="sub">
+              <div>Tổng: <b>230 công việc</b></div>
+              <div>Đã hoàn thành: <b>118</b></div>
+              <div>Đang triển khai: <b>90</b><span class="pill ok">Khả quan</span></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Tổng số gói thầu</h3>
+            <div class="big">10 gói thầu</div>
+            <div class="sub">
+              <div>Chuẩn bị ĐT: <b>3</b><span class="pill warn">30%</span></div>
+              <div>Triển khai XD: <b>5</b><span class="pill ok">50%</span></div>
+              <div>Hoàn thành: <b>2</b><span class="pill ok">20%</span></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>Khối lượng theo thời gian</h3>
+            <div class="chart-shell">
+              <canvas id="workVolumeChart"></canvas>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Ngân sách & giải ngân theo thời gian</h3>
+            <div class="chart-shell">
+              <canvas id="budgetTimeChart"></canvas>
+            </div>
+          </article>
+        </div>
+
+        <article class="card">
+          <h3>Danh sách dự án</h3>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 30px;"></th>
+                <th>Tên dự án / Gói thầu</th>
+                <th>Ngân sách</th>
+                <th>Đã chi</th>
+                <th>Khối lượng đạt</th>
+                <th>Tiến độ</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody id="projectTableBody">
+              <!-- Project 1: Bệnh viện Cẩm Xuyên -->
+              <tr class="project-row" data-project="1" onclick="togglePackages(1)" style="cursor: pointer; background: #f8fbff;">
+                <td style="text-align: center; font-size: 16px;">▶</td>
+                <td>
+                  <strong style="font-size: 15px;">Cải tạo, nâng cấp Bệnh viện đa khoa huyện Cẩm Xuyên</strong><br>
+                  <small style="color: #6b7890;">DA-7946312 • 4 gói thầu</small>
+                </td>
+                <td><strong>185 tỷ</strong></td>
+                <td><strong>123.5 tỷ</strong></td>
+                <td><strong>151/222</strong></td>
+                <td><strong>66.8%</strong></td>
+                <td><span class="status st-doing">Đúng tiến độ</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="1" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT nhà khám bệnh (GT-01)</td>
+                <td>75 tỷ</td>
+                <td>53 tỷ</td>
+                <td>68/96</td>
+                <td>70.7%</td>
+                <td><span class="status st-doing">Đúng tiến độ</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="1" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT nhà điều trị nội trú (GT-02)</td>
+                <td>62 tỷ</td>
+                <td>41.2 tỷ</td>
+                <td>48/72</td>
+                <td>66.5%</td>
+                <td><span class="status st-doing">Đúng tiến độ</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="1" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT trang thiết bị y tế (GT-03)</td>
+                <td>32 tỷ</td>
+                <td>20.5 tỷ</td>
+                <td>25/39</td>
+                <td>64.1%</td>
+                <td><span class="status st-doing">Đúng tiến độ</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="1" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT hạ tầng kỹ thuật (GT-04)</td>
+                <td>16 tỷ</td>
+                <td>8.8 tỷ</td>
+                <td>10/18</td>
+                <td>55.0%</td>
+                <td><span class="status st-warning">Cần đẩy nhanh</span></td>
+              </tr>
+
+              <!-- Project 2: Y tế cơ sở vùng KK -->
+              <tr class="project-row" data-project="2" onclick="togglePackages(2)" style="cursor: pointer; background: #f8fbff;">
+                <td style="text-align: center; font-size: 16px;">▶</td>
+                <td>
+                  <strong style="font-size: 15px;">Chương trình đầu tư phát triển mạng lưới y tế cơ sở vùng khó khăn</strong><br>
+                  <small style="color: #6b7890;">DA-8028364 • 3 gói thầu</small>
+                </td>
+                <td><strong>142 tỷ</strong></td>
+                <td><strong>82.56 tỷ</strong></td>
+                <td><strong>107/172</strong></td>
+                <td><strong>58.1%</strong></td>
+                <td><span class="status st-doing">Đúng tiến độ</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="2" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT trạm y tế xã (12 trạm) (GT-01)</td>
+                <td>84 tỷ</td>
+                <td>50.4 tỷ</td>
+                <td>72/120</td>
+                <td>60.0%</td>
+                <td><span class="status st-doing">Đúng tiến độ</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="2" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT trang thiết bị y tế (GT-02)</td>
+                <td>36 tỷ</td>
+                <td>20.16 tỷ</td>
+                <td>24/43</td>
+                <td>56.0%</td>
+                <td><span class="status st-warning">Chậm tiến độ</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="2" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT đường giao thông (GT-03)</td>
+                <td>22 tỷ</td>
+                <td>12 tỷ</td>
+                <td>11/20</td>
+                <td>54.5%</td>
+                <td><span class="status st-warning">Chậm tiến độ</span></td>
+              </tr>
+
+              <!-- Project 3: Đường Đức Thọ - Trần Phú -->
+              <tr class="project-row" data-project="3" onclick="togglePackages(3)" style="cursor: pointer; background: #f8fbff;">
+                <td style="text-align: center; font-size: 16px;">▶</td>
+                <td>
+                  <strong style="font-size: 15px;">Đường từ thị trấn Đức Thọ đến Khu lưu niệm Trần Phú</strong><br>
+                  <small style="color: #6b7890;">DA-7941294 • 3 gói thầu</small>
+                </td>
+                <td><strong>95 tỷ</strong></td>
+                <td><strong>17.1 tỷ</strong></td>
+                <td><strong>47/56</strong></td>
+                <td><strong>18.0%</strong></td>
+                <td><span class="status st-warning">Chuẩn bị ĐT</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="3" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT tư vấn thiết kế và khảo sát (GT-01)</td>
+                <td>9.5 tỷ</td>
+                <td>8.55 tỷ</td>
+                <td>45/50</td>
+                <td>90.0%</td>
+                <td><span class="status st-done">Gần hoàn thành</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="3" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT giải phóng MB (GT-02)</td>
+                <td>23.75 tỷ</td>
+                <td>5.7 tỷ</td>
+                <td>2/8</td>
+                <td>24.0%</td>
+                <td><span class="status st-warning">Đang triển khai</span></td>
+              </tr>
+              <tr class="package-rows" data-parent="3" style="display: none; background: #f0f5fb;">
+                <td></td>
+                <td style="padding-left: 30px;">└ GT xây mặt đường (GT-03)</td>
+                <td>61.75 tỷ</td>
+                <td>2.85 tỷ</td>
+                <td>0/0</td>
+                <td>4.6%</td>
+                <td><span class="status st-todo">Chưa bắt đầu</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+    </div>
+
+    <!-- PAGE 2: QUẢN LÝ DỰ ÁN (3 DỰ ÁN) -->
+    <div id="page2" class="tab-content">
+      <section class="page">
+        <h2 class="page-title">QUẢN LÝ DỰ ÁN <span class="badge">Theo dõi chi tiết toàn bộ dự án</span></h2>
+
+        <!-- 1. Bảng chi tiết tất cả dự án -->
+        <article class="card" style="margin-bottom: 20px;">
+          <h3 style="margin-bottom: 16px; font-size: 16px; color: #0f274d;">📋 Bảng chi tiết tất cả dự án</h3>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã DA</th>
+                  <th>Tên dự án</th>
+                  <th>Ngân sách</th>
+                  <th>Đã chi</th>
+                  <th>Còn lại</th>
+                  <th>% Giải ngân</th>
+                  <th>Số gói thầu</th>
+                  <th>Tiến độ</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>DA-7946312</strong></td>
+                  <td>Cải tạo, nâng cấp Bệnh viện đa khoa huyện Cẩm Xuyên</td>
+                  <td>185 tỷ</td>
+                  <td>123.5 tỷ</td>
+                  <td>61.5 tỷ</td>
+                  <td><strong style="color: #10b981;">66.8%</strong></td>
+                  <td>4</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 66.8%; background: linear-gradient(90deg, #06b6d4, #3b82f6); border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; font-weight: 700; color: #1f6feb;">66.8%</span>
+                    </div>
+                  </td>
+                  <td><span class="status st-doing">Đúng tiến độ</span></td>
+                </tr>
+                <tr>
+                  <td><strong>DA-8028364</strong></td>
+                  <td>Chương trình đầu tư phát triển mạng lưới y tế cơ sở vùng khó khăn</td>
+                  <td>142 tỷ</td>
+                  <td>82.56 tỷ</td>
+                  <td>59.44 tỷ</td>
+                  <td><strong style="color: #3b82f6;">58.1%</strong></td>
+                  <td>3</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 58.1%; background: linear-gradient(90deg, #06b6d4, #3b82f6); border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; font-weight: 700; color: #1f6feb;">58.1%</span>
+                    </div>
+                  </td>
+                  <td><span class="status st-doing">Đúng tiến độ</span></td>
+                </tr>
+                <tr>
+                  <td><strong>DA-7941294</strong></td>
+                  <td>Đường từ thị trấn Đức Thọ đến Khu lưu niệm Trần Phú</td>
+                  <td>95 tỷ</td>
+                  <td>17.1 tỷ</td>
+                  <td>77.9 tỷ</td>
+                  <td><strong style="color: #f59e0b;">18.0%</strong></td>
+                  <td>3</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 18%; background: linear-gradient(90deg, #f59e0b, #ef4444); border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; font-weight: 700; color: #f59e0b;">18.0%</span>
+                    </div>
+                  </td>
+                  <td><span class="status st-warning">Chuẩn bị ĐT</span></td>
+                </tr>
+                <tr style="background: #f8fbff; font-weight: 700;">
+                  <td colspan="2"><strong>TỔNG CỘNG</strong></td>
+                  <td><strong>422 tỷ</strong></td>
+                  <td><strong>223.16 tỷ</strong></td>
+                  <td><strong>198.84 tỷ</strong></td>
+                  <td><strong style="color: #1f6feb;">52.9%</strong></td>
+                  <td><strong>10</strong></td>
+                  <td colspan="2"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- 2. Bảng so sánh khối lượng -->
+        <article class="card" style="margin-bottom: 20px;">
+          <h3 style="margin-bottom: 16px; font-size: 16px; color: #0f274d;">📊 So sánh khối lượng & tỷ lệ đạt</h3>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 30px;"></th>
+                  <th>Dự án / Gói thầu</th>
+                  <th>Tổng khối lượng</th>
+                  <th>KL hoàn thành</th>
+                  <th>Tỷ lệ KL đạt</th>
+                  <th>Giá trị thanh toán</th>
+                  <th>Tỷ lệ thanh toán</th>
+                  <th>Chênh lệch</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Project 1: Trường THCS -->
+                <tr class="project-row" onclick="togglePackagesPage2(1)" style="cursor: pointer; background: #f8fbff;">
+                  <td style="text-align: center; font-size: 16px;">▶</td>
+                  <td><strong>Bệnh viện Cẩm Xuyên</strong><br><small style="color: #6b7890;">DA-7946312</small></td>
+                  <td><strong>211</strong></td>
+                  <td><strong style="color: #10b981;">144</strong></td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 68.2%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <strong style="font-size: 13px; color: #10b981;">68.2%</strong>
+                    </div>
+                  </td>
+                  <td><strong>523 tỷ</strong></td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 61.5%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <strong style="font-size: 13px; color: #3b82f6;">61.5%</strong>
+                    </div>
+                  </td>
+                  <td><span style="color: #10b981; font-weight: 700;">+6.7%</span></td>
+                </tr>
+
+                <!-- Packages of Project 1 -->
+                <tr class="package-detail-row" data-parent="1" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT nhà khám bệnh</td>
+                  <td>115</td>
+                  <td style="color: #10b981;">70</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 60.9%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #10b981;">60.9%</span>
+                    </div>
+                  </td>
+                  <td>215 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 61.4%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #3b82f6;">61.4%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #ef4444; font-size: 13px;">-0.5%</span></td>
+                </tr>
+                <tr class="package-detail-row" data-parent="1" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT nhà điều trị nội trú</td>
+                  <td>58</td>
+                  <td style="color: #10b981;">36</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 62.1%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #10b981;">62.1%</span>
+                    </div>
+                  </td>
+                  <td>112 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 62.2%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #3b82f6;">62.2%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #ef4444; font-size: 13px;">-0.1%</span></td>
+                </tr>
+                <tr class="package-detail-row" data-parent="1" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT trang thiết bị y tế</td>
+                  <td>52</td>
+                  <td style="color: #10b981;">32</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 61.5%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #10b981;">61.5%</span>
+                    </div>
+                  </td>
+                  <td>93 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 62%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #3b82f6;">62.0%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #ef4444; font-size: 13px;">-0.5%</span></td>
+                </tr>
+                <tr class="package-detail-row" data-parent="1" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT hạ tầng kỹ thuật</td>
+                  <td>55</td>
+                  <td style="color: #10b981;">33</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 60%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #10b981;">60.0%</span>
+                    </div>
+                  </td>
+                  <td>103 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 60.6%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #3b82f6;">60.6%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #ef4444; font-size: 13px;">-0.6%</span></td>
+                </tr>
+
+                <!-- Project 2: Y tế cơ sở vùng KK -->
+                <tr class="project-row" onclick="togglePackagesPage2(2)" style="cursor: pointer; background: #f8fbff;">
+                  <td style="text-align: center; font-size: 16px;">▶</td>
+                  <td><strong>Y tế cơ sở vùng KK</strong><br><small style="color: #6b7890;">DA-8028364</small></td>
+                  <td><strong>162</strong></td>
+                  <td><strong style="color: #10b981;">103</strong></td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 63.6%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <strong style="font-size: 13px; color: #10b981;">63.6%</strong>
+                    </div>
+                  </td>
+                  <td><strong>341 tỷ</strong></td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 55%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <strong style="font-size: 13px; color: #3b82f6;">55.0%</strong>
+                    </div>
+                  </td>
+                  <td><span style="color: #10b981; font-weight: 700;">+8.6%</span></td>
+                </tr>
+
+                <!-- Packages of Project 2 -->
+                <tr class="package-detail-row" data-parent="2" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT trạm y tế xã</td>
+                  <td>55</td>
+                  <td style="color: #10b981;">35</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 63.6%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #10b981;">63.6%</span>
+                    </div>
+                  </td>
+                  <td>110 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 55%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #3b82f6;">55.0%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #10b981; font-size: 13px;">+8.6%</span></td>
+                </tr>
+                <tr class="package-detail-row" data-parent="2" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT trang thiết bị y tế</td>
+                  <td>68</td>
+                  <td style="color: #10b981;">43</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 63.2%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #10b981;">63.2%</span>
+                    </div>
+                  </td>
+                  <td>138 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 55.2%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #3b82f6;">55.2%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #10b981; font-size: 13px;">+8.0%</span></td>
+                </tr>
+                <tr class="package-detail-row" data-parent="2" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT đường giao thông</td>
+                  <td>39</td>
+                  <td style="color: #10b981;">25</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 64.1%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #10b981;">64.1%</span>
+                    </div>
+                  </td>
+                  <td>93 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 54.7%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #3b82f6;">54.7%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #10b981; font-size: 13px;">+9.4%</span></td>
+                </tr>
+
+                <!-- Project 3: Trạm YT -->
+                <tr class="project-row" onclick="togglePackagesPage2(3)" style="cursor: pointer; background: #f8fbff;">
+                  <td style="text-align: center; font-size: 16px;">▶</td>
+                  <td><strong>Đường Đức Thọ - Trần Phú</strong><br><small style="color: #6b7890;">DA-7941294</small></td>
+                  <td><strong>52</strong></td>
+                  <td><strong style="color: #f59e0b;">48</strong></td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 92.3%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <strong style="font-size: 13px; color: #10b981;">92.3%</strong>
+                    </div>
+                  </td>
+                  <td><strong>67.5 tỷ</strong></td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 15%; background: #f59e0b; border-radius: 999px;"></div>
+                      </div>
+                      <strong style="font-size: 13px; color: #f59e0b;">15.0%</strong>
+                    </div>
+                  </td>
+                  <td><span style="color: #ef4444; font-weight: 700;">-77.3%</span></td>
+                </tr>
+
+                <!-- Packages of Project 3 -->
+                <tr class="package-detail-row" data-parent="3" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT tư vấn thiết kế</td>
+                  <td>47</td>
+                  <td style="color: #10b981;">42</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 89.4%; background: #10b981; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #10b981;">89.4%</span>
+                    </div>
+                  </td>
+                  <td>40.5 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 90%; background: #3b82f6; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #3b82f6;">90.0%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #ef4444; font-size: 13px;">-0.6%</span></td>
+                </tr>
+                <tr class="package-detail-row" data-parent="3" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT giải phóng MB</td>
+                  <td>4</td>
+                  <td style="color: #f59e0b;">1</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 25%; background: #f59e0b; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #f59e0b;">25.0%</span>
+                    </div>
+                  </td>
+                  <td>21 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 20%; background: #f59e0b; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #f59e0b;">20.0%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #10b981; font-size: 13px;">+5.0%</span></td>
+                </tr>
+                <tr class="package-detail-row" data-parent="3" style="display: none; background: #f0f5fb;">
+                  <td></td>
+                  <td style="padding-left: 25px;">└ GT xây mặt đường</td>
+                  <td>1</td>
+                  <td style="color: #cbd5e1;">0</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 0%; background: #cbd5e1; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #cbd5e1;">0%</span>
+                    </div>
+                  </td>
+                  <td>6 tỷ</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="height: 100%; width: 2%; background: #cbd5e1; border-radius: 999px;"></div>
+                      </div>
+                      <span style="font-size: 12px; color: #cbd5e1;">2.0%</span>
+                    </div>
+                  </td>
+                  <td><span style="color: #ef4444; font-size: 13px;">-2.0%</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top: 12px; padding: 12px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 6px;">
+            <strong style="color: #1e40af; font-size: 13px;">💡 Ghi chú:</strong>
+            <span style="color: #1e40af; font-size: 13px;"> Chênh lệch dương (+) = Khối lượng đạt cao hơn thanh toán. Chênh lệch âm (-) = Thanh toán chậm hơn khối lượng thực hiện.</span>
+          </div>
+        </article>
+
+        <!-- 3. Các loại chi phí -->
+        <article class="card" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 16px; color: #0f274d;">💰 Phân loại chi phí theo dự án</h3>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="switchCostView('value')" id="costBtnValue" class="view-toggle-btn active" style="padding: 6px 12px; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Giá trị</button>
+              <button onclick="switchCostView('percent')" id="costBtnPercent" class="view-toggle-btn" style="padding: 6px 12px; border: 1px solid #e2e8f0; background: white; color: #64748b; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Tỷ lệ %</button>
+              <button onclick="switchCostView('budget')" id="costBtnBudget" class="view-toggle-btn" style="padding: 6px 12px; border: 1px solid #e2e8f0; background: white; color: #64748b; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">% Ngân sách</button>
+            </div>
+          </div>
+          <div id="costTableContainer"></div>
+        </article>
+
+        <!-- 4. Gantt Chart -->
+        <article class="card">
+          <h3 style="margin-bottom: 16px; font-size: 16px; color: #0f274d;">📅 Gantt Chart - Tiến độ tất cả các dự án</h3>
+          
+          <div style="overflow-x: auto;">
+            <div style="min-width: 1000px;">
+              <!-- Gantt Header -->
+              <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; margin-bottom: 12px; padding: 12px; background: linear-gradient(180deg, #f8fbff 0%, #f0f5fb 100%); border-radius: 8px;">
+                <div style="font-size: 13px; font-weight: 700; color: #6b7890;">DỰ ÁN / GÓI THẦU</div>
+                <div style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 0; text-align: center; font-size: 12px; font-weight: 700; color: #6b7890;">
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T1</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T2</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T3</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T4</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T5</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T6</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T7</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T8</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T9</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T10</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T11</div>
+                  <div style="padding: 6px 0; border-left: 1px solid #dbe4f2;">T12</div>
+                </div>
+              </div>
+
+              <!-- Project 1: Bệnh viện Cẩm Xuyên -->
+              <div style="margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 8px;">
+                  <div style="padding: 12px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 10px; color: #fff;">
+                    <div style="font-size: 14px; font-weight: 800; letter-spacing: 0.3px;">BỆNH VIỆN CẨM XUYÊN</div>
+                    <div style="font-size: 11px; opacity: 0.9; margin-top: 2px;">DA-7946312 • Tiến độ: 61.5%</div>
+                  </div>
+                  <div style="position: relative; height: 40px; border-radius: 10px; background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%); border: 1px solid #dbe7f5; overflow: hidden;">
+                    <div style="position: absolute; top: 8px; left: 8.33%; width: 50%; height: 24px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);">
+                      T2 - T8 (61.5%)
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Packages của Bệnh viện Cẩm Xuyên -->
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 6px;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #93c5fd; margin-right: 6px;">●</span>GT xây mặt đường học và hành chính
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #f8fbff 0, #f8fbff calc(100% / 12 - 1px), #dbe4f0 calc(100% / 12 - 1px), #dbe4f0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 8.33%; width: 45%; height: 22px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);">61.4%</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 6px;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #93c5fd; margin-right: 6px;">●</span>GT xây mặt đường công vụ giáo viên
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #f8fbff 0, #f8fbff calc(100% / 12 - 1px), #dbe4f0 calc(100% / 12 - 1px), #dbe4f0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 16.67%; width: 42%; height: 22px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);">62.2%</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 6px;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #93c5fd; margin-right: 6px;">●</span>GT xây dựng sân thể thao
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #f8fbff 0, #f8fbff calc(100% / 12 - 1px), #dbe4f0 calc(100% / 12 - 1px), #dbe4f0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 25%; width: 38%; height: 22px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);">62.0%</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #93c5fd; margin-right: 6px;">●</span>GT hệ thống cấp thoát nước
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #f8fbff 0, #f8fbff calc(100% / 12 - 1px), #dbe4f0 calc(100% / 12 - 1px), #dbe4f0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 33.33%; width: 35%; height: 22px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);">60.6%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Project 2: Y tế cơ sở vùng KK -->
+              <div style="margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 8px;">
+                  <div style="padding: 12px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 10px; color: #fff;">
+                    <div style="font-size: 14px; font-weight: 800; letter-spacing: 0.3px;">Y TẾ CƠ SỞ VÙNG KK</div>
+                    <div style="font-size: 11px; opacity: 0.9; margin-top: 2px;">DA-8028364 • Tiến độ: 55.0%</div>
+                  </div>
+                  <div style="position: relative; height: 40px; border-radius: 10px; background: linear-gradient(180deg, #fefbf7 0%, #fef5e7 100%); border: 1px solid #fde4c0; overflow: hidden;">
+                    <div style="position: absolute; top: 8px; left: 16.67%; width: 41.67%; height: 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);">
+                      T3 - T8 (55.0%)
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Packages của Y tế cơ sở vùng KK -->
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 6px;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #fbbf24; margin-right: 6px;">●</span>GT xây mặt đường ở (đợt 1)
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #fefbf7 0, #fefbf7 calc(100% / 12 - 1px), #fde4c0 calc(100% / 12 - 1px), #fde4c0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 16.67%; width: 38%; height: 22px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);">55.0%</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 6px;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #fbbf24; margin-right: 6px;">●</span>GT xây mặt đường ở (đợt 2)
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #fefbf7 0, #fefbf7 calc(100% / 12 - 1px), #fde4c0 calc(100% / 12 - 1px), #fde4c0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 25%; width: 35%; height: 22px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);">55.2%</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #fbbf24; margin-right: 6px;">●</span>GT hạ tầng kỹ thuật
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #fefbf7 0, #fefbf7 calc(100% / 12 - 1px), #fde4c0 calc(100% / 12 - 1px), #fde4c0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 33.33%; width: 30%; height: 22px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);">54.7%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Project 3: Đường Đức Thọ - Trần Phú -->
+              <div style="margin-bottom: 10px;">
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 8px;">
+                  <div style="padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px; color: #fff;">
+                    <div style="font-size: 14px; font-weight: 800; letter-spacing: 0.3px;">ĐƯỜNG ĐỨC THỌ - TRẦN PHÚ</div>
+                    <div style="font-size: 11px; opacity: 0.9; margin-top: 2px;">DA-7941294 • Tiến độ: 15.0%</div>
+                  </div>
+                  <div style="position: relative; height: 40px; border-radius: 10px; background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; overflow: hidden;">
+                    <div style="position: absolute; top: 8px; left: 0%; width: 16.67%; height: 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                      T1 - T2 (15.0%)
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Packages của Đường Đức Thọ - Trần Phú -->
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 6px;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #34d399; margin-right: 6px;">●</span>GT tư vấn thiết kế
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #f0fdf4 0, #f0fdf4 calc(100% / 12 - 1px), #bbf7d0 calc(100% / 12 - 1px), #bbf7d0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 0%; width: 16.67%; height: 22px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);">90.0%</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center; margin-bottom: 6px;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #34d399; margin-right: 6px;">●</span>GT san nền và móng
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #f0fdf4 0, #f0fdf4 calc(100% / 12 - 1px), #bbf7d0 calc(100% / 12 - 1px), #bbf7d0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 8.33%; width: 8.34%; height: 22px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);">20%</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 12px; align-items: center;">
+                  <div style="padding-left: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+                    <span style="color: #34d399; margin-right: 6px;">●</span>GT xây mặt đường chính
+                  </div>
+                  <div style="position: relative; height: 34px; border-radius: 8px; background: repeating-linear-gradient(90deg, #f0fdf4 0, #f0fdf4 calc(100% / 12 - 1px), #bbf7d0 calc(100% / 12 - 1px), #bbf7d0 calc(100% / 12)); overflow: hidden;">
+                    <div style="position: absolute; top: 6px; left: 16.67%; width: 4%; height: 22px; background: #cbd5e1; border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 10px; font-weight: 700;">2%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <!-- PAGE 3: CHI TIẾT DỰ ÁN -->
+    <div id="page3" class="tab-content">
+      <section class="page">
+        <h2 class="page-title">CHI TIẾT DỰ ÁN <span class="badge">Thông tin đầy đủ</span></h2>
+
+        <!-- Project Selector -->
+        <div class="filter-bar" style="margin-bottom: 20px;">
+          <span class="filter-icon">📁</span>
+          <div class="filter-group">
+            <label for="projectSelect">Chọn dự án:</label>
+            <select id="projectSelect" onchange="loadProjectDetail(this.value)">
+              <option value="1">Dự án Cải tạo, nâng cấp Bệnh viện đa khoa huyện Cẩm Xuyên (DA-7946312)</option>
+              <option value="2">Chương trình đầu tư phát triển mạng lưới y tế cơ sở vùng khó khăn (DA-8028364)</option>
+              <option value="3">Dự án Đường từ thị trấn Đức Thọ đến Khu lưu niệm Trần Phú (DA-7941294)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Project Overview Card -->
+        <div id="projectOverviewCard"></div>
+
+        <!-- Sub Tabs for Page 3 -->
+        <div class="page2-subtabs" style="margin: 24px 0; display: flex; gap: 12px;">
+          <button class="page2-subtab-btn active" onclick="openPage3Tab(event, 'costTab')" style="display: flex; align-items: center; gap: 10px; padding: 14px 24px; border: none; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); transition: all 0.3s; position: relative; overflow: hidden;">
+            <span style="font-size: 20px;">💰</span>
+            <span>Quản lý Chi phí</span>
+            <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shimmer 3s infinite;"></div>
+          </button>
+          <button class="page2-subtab-btn" onclick="openPage3Tab(event, 'scheduleTab')" style="display: flex; align-items: center; gap: 10px; padding: 14px 24px; border: 2px solid #e2e8f0; background: white; color: #64748b; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.3s;">
+            <span style="font-size: 20px;">📅</span>
+            <span>Quản lý Tiến độ</span>
+          </button>
+          <button class="page2-subtab-btn" onclick="openPage3Tab(event, 'documentTab')" style="display: flex; align-items: center; gap: 10px; padding: 14px 24px; border: 2px solid #e2e8f0; background: white; color: #64748b; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.3s;">
+            <span style="font-size: 20px;">📂</span>
+            <span>Quản lý Hồ sơ</span>
+          </button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div id="page3TabContent"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Tab Navigation
+    function openTab(evt, tabName) {
+      const tabContents = document.getElementsByClassName("tab-content");
+      for (let i = 0; i < tabContents.length; i++) {
+        tabContents[i].classList.remove("active");
+      }
+
+      const tabButtons = document.getElementsByClassName("tab-btn");
+      for (let i = 0; i < tabButtons.length; i++) {
+        tabButtons[i].classList.remove("active");
+      }
+
+      document.getElementById(tabName).classList.add("active");
+      evt.currentTarget.classList.add("active");
+
+      // Load charts when switching tabs
+      if (tabName === 'page1') {
+        setTimeout(initPage1Charts, 100);
+      } else if (tabName === 'page2') {
+        setTimeout(initPage2Charts, 100);
+      } else if (tabName === 'page3') {
+        setTimeout(() => loadProjectDetail(document.getElementById('projectSelect').value), 100);
+      }
+    }
+
+    // Toggle Package Rows
+    function togglePackages(projectId) {
+      const packageRows = document.querySelectorAll(`.package-rows[data-parent="${projectId}"]`);
+      const projectRow = document.querySelector(`.project-row[data-project="${projectId}"]`);
+      const arrow = projectRow.querySelector('td:first-child');
+      
+      const isVisible = packageRows[0].style.display !== 'none';
+      
+      packageRows.forEach(row => {
+        row.style.display = isVisible ? 'none' : 'table-row';
+      });
+      
+      arrow.textContent = isVisible ? '▶' : '▼';
+    }
+
+    // Toggle Package Detail Rows in Page 2 tables
+    function togglePackagesPage2(projectId) {
+      const packageRows = document.querySelectorAll(`.package-detail-row[data-parent="${projectId}"]`);
+      const projectRows = document.querySelectorAll(`.project-row[onclick*="togglePackagesPage2(${projectId})"]`);
+      
+      if (packageRows.length === 0) return;
+      
+      const isVisible = packageRows[0].style.display !== 'none';
+      
+      packageRows.forEach(row => {
+        row.style.display = isVisible ? 'none' : 'table-row';
+      });
+      
+      projectRows.forEach(row => {
+        const arrow = row.querySelector('td:first-child');
+        if (arrow) {
+          arrow.textContent = isVisible ? '▶' : '▼';
+        }
+      });
+    }
+
+    // Toggle Cost Package Rows
+    function toggleCostPackages(projectId) {
+      const packageRows = document.querySelectorAll(`.cost-package-row[data-parent="${projectId}"]`);
+      const projectRows = document.querySelectorAll(`.project-row[onclick*="toggleCostPackages(${projectId})"]`);
+      
+      if (packageRows.length === 0) return;
+      
+      const isVisible = packageRows[0].style.display !== 'none';
+      
+      packageRows.forEach(row => {
+        row.style.display = isVisible ? 'none' : 'table-row';
+      });
+      
+      projectRows.forEach(row => {
+        const arrow = row.querySelector('td:first-child');
+        if (arrow) {
+          arrow.textContent = isVisible ? '▶' : '▼';
+        }
+      });
+    }
+
+    // Filter Functions
+    function applyFilters() {
+      alert('Bộ lọc đã được áp dụng!');
+    }
+
+    function resetFilters() {
+      document.getElementById('filterYear').value = '2026';
+      document.getElementById('filterMonth').value = '3';
+      document.getElementById('filterQuarter').value = 'Q1';
+      document.getElementById('filterStatus').value = 'all';
+    }
+
+    // Project Data
+    const projectsData = {
+      1: {
+        id: 1,
+        name: "Dự án Cải tạo, nâng cấp Bệnh viện đa khoa huyện Cẩm Xuyên",
+        code: "DA-7946312",
+        status: "Triển khai xây dựng",
+        budget: 185000000000,
+        spent: 123500000000,
+        progress: 66.8,
+        department: "Ban Quản lý Dự án Hà Tĩnh",
+        startDate: "10/02/2025",
+        endDate: "25/10/2026",
+        duration: "20 tháng",
+        projectManager: {
+          name: "Nguyễn Văn An",
+          position: "Giám đốc Dự án",
+          phone: "0912.345.678",
+          email: "nva@bqlda.gov.vn"
+        },
+        technicalLead: {
+          name: "Trần Minh Tuấn",
+          position: "Trưởng phòng Kỹ thuật",
+          phone: "0923.456.789",
+          email: "tmt@bqlda.gov.vn"
+        },
+        accountant: {
+          name: "Lê Thị Hương",
+          position: "Kế toán trưởng",
+          phone: "0934.567.890",
+          email: "lth@bqlda.gov.vn"
+        },
+        supervisor: {
+          name: "Phạm Đức Thắng",
+          position: "Giám sát thi công",
+          phone: "0945.678.901",
+          email: "pdt@bqlda.gov.vn"
+        },
+        packages: [
+          { id: 1, name: "Gói thầu xây dựng khối nhà khám bệnh", code: "GT-01", budget: 75000000000, spent: 53000000000, progress: 70.7 },
+          { id: 2, name: "Gói thầu xây dựng khối nhà điều trị nội trú", code: "GT-02", budget: 62000000000, spent: 41200000000, progress: 66.5 },
+          { id: 3, name: "Gói thầu trang thiết bị y tế", code: "GT-03", budget: 32000000000, spent: 20500000000, progress: 64.1 },
+          { id: 4, name: "Gói thầu hạ tầng kỹ thuật", code: "GT-04", budget: 16000000000, spent: 8800000000, progress: 55.0 }
+        ],
+        sources: {
+          owner: { budget: 27750000000, spent: 18525000000 },
+          state: { budget: 157250000000, spent: 104975000000 }
+        },
+        phases: {
+          planning: { total: 32, completed: 31 },
+          construction: { total: 148, completed: 98 },
+          acceptance: { total: 42, completed: 22 }
+        }
+      },
+      2: {
+        id: 2,
+        name: "Chương trình đầu tư phát triển mạng lưới y tế cơ sở vùng khó khăn",
+        code: "DA-8028364",
+        status: "Triển khai xây dựng",
+        budget: 142000000000,
+        spent: 82560000000,
+        progress: 58.1,
+        department: "Ban Quản lý Dự án Hà Tĩnh",
+        startDate: "15/03/2025",
+        endDate: "30/09/2026",
+        duration: "18 tháng",
+        projectManager: {
+          name: "Hoàng Minh Quân",
+          position: "Giám đốc Dự án",
+          phone: "0918.234.567",
+          email: "hmq@bqlda.gov.vn"
+        },
+        technicalLead: {
+          name: "Đỗ Văn Hải",
+          position: "Trưởng phòng Kỹ thuật",
+          phone: "0929.345.678",
+          email: "dvh@bqlda.gov.vn"
+        },
+        accountant: {
+          name: "Vũ Thị Mai",
+          position: "Kế toán trưởng",
+          phone: "0930.456.789",
+          email: "vtm@bqlda.gov.vn"
+        },
+        supervisor: {
+          name: "Bùi Thanh Tùng",
+          position: "Giám sát thi công",
+          phone: "0941.567.890",
+          email: "btt@bqlda.gov.vn"
+        },
+        packages: [
+          { id: 5, name: "Gói thầu xây dựng trạm y tế xã (12 trạm)", code: "GT-01", budget: 84000000000, spent: 50400000000, progress: 60.0 },
+          { id: 6, name: "Gói thầu trang thiết bị y tế", code: "GT-02", budget: 36000000000, spent: 20160000000, progress: 56.0 },
+          { id: 7, name: "Gói thầu đường giao thông nội bộ", code: "GT-03", budget: 22000000000, spent: 12000000000, progress: 54.5 }
+        ],
+        sources: {
+          owner: { budget: 14200000000, spent: 8256000000 },
+          state: { budget: 127800000000, spent: 74304000000 }
+        },
+        phases: {
+          planning: { total: 28, completed: 27 },
+          construction: { total: 112, completed: 64 },
+          acceptance: { total: 32, completed: 16 }
+        }
+      },
+      3: {
+        id: 3,
+        name: "Dự án Đường từ thị trấn Đức Thọ đến Khu lưu niệm Trần Phú",
+        code: "DA-7941294",
+        status: "Chuẩn bị đầu tư",
+        budget: 95000000000,
+        spent: 17100000000,
+        progress: 18.0,
+        department: "Ban Quản lý Dự án Hà Tĩnh",
+        startDate: "20/01/2025",
+        endDate: "15/08/2026",
+        duration: "19 tháng",
+        projectManager: {
+          name: "Ngô Thị Lan",
+          position: "Giám đốc Dự án",
+          phone: "0915.789.012",
+          email: "ntl@bqlda.gov.vn"
+        },
+        technicalLead: {
+          name: "Lưu Văn Thành",
+          position: "Trưởng phòng Kỹ thuật",
+          phone: "0926.890.123",
+          email: "lvt@bqlda.gov.vn"
+        },
+        accountant: {
+          name: "Đinh Thị Thu",
+          position: "Kế toán trưởng",
+          phone: "0937.901.234",
+          email: "dtt@bqlda.gov.vn"
+        },
+        supervisor: {
+          name: "Trương Minh Đức",
+          position: "Giám sát thi công",
+          phone: "0948.012.345",
+          email: "tmd@bqlda.gov.vn"
+        },
+        packages: [
+          { id: 8, name: "Gói thầu tư vấn thiết kế và khảo sát", code: "GT-01", budget: 9500000000, spent: 8550000000, progress: 90.0 },
+          { id: 9, name: "Gói thầu giải phóng mặt bằng", code: "GT-02", budget: 23750000000, spent: 5700000000, progress: 24.0 },
+          { id: 10, name: "Gói thầu xây dựng mặt đường", code: "GT-03", budget: 61750000000, spent: 2850000000, progress: 4.6 }
+        ],
+        sources: {
+          owner: { budget: 19000000000, spent: 3420000000 },
+          state: { budget: 76000000000, spent: 13680000000 }
+        },
+        phases: {
+          planning: { total: 48, completed: 45 },
+          construction: { total: 8, completed: 2 },
+          acceptance: { total: 0, completed: 0 }
+        }
+      }
+    };
+
+    // Format Currency
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        notation: 'compact',
+        compactDisplay: 'short',
+        maximumFractionDigits: 1
+      }).format(value);
+    }
+
+    // Load Project Detail
+    function loadProjectDetail(projectId) {
+      const project = projectsData[projectId];
+      const totalTasks = project.phases.planning.total + project.phases.construction.total + project.phases.acceptance.total;
+      const completedTasks = project.phases.planning.completed + project.phases.construction.completed + project.phases.acceptance.completed;
+      
+      // Create Overview Card
+      const overviewHTML = `
+        <div class="detail-header">
+          <h2 class="detail-title">${project.name}</h2>
+          <div class="detail-code">${project.code} • ${project.status}</div>
+        </div>
+
+        <!-- Thông tin tổ chức & thời gian -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="padding: 16px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <span style="font-size: 24px;">🏢</span>
+              <div>
+                <div style="font-size: 12px; color: #1e40af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Phòng ban 1</div>
+                <div style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-top: 4px;">${project.department}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <span style="font-size: 24px;">📅</span>
+              <div>
+                <div style="font-size: 12px; color: #92400e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Thời gian triển khai</div>
+                <div style="font-size: 16px; font-weight: 800; color: #78350f; margin-top: 4px;">${project.startDate} - ${project.endDate}</div>
+                <div style="font-size: 13px; color: #92400e; margin-top: 2px;">Thời hạn: <strong>${project.duration}</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Đội ngũ thực hiện -->
+        <div style="margin-bottom: 24px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>👥</span> Đội ngũ thực hiện dự án
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
+            <!-- Giám đốc dự án -->
+            <div style="padding: 14px; background: white; border: 2px solid #e0f2fe; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.06)'">
+              <div style="display: flex; align-items: start; gap: 10px;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0;">
+                  ${project.projectManager.name.charAt(0)}
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${project.projectManager.name}</div>
+                  <div style="font-size: 12px; color: #3b82f6; font-weight: 600; margin: 2px 0;">${project.projectManager.position}</div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 4px;">📞 ${project.projectManager.phone}</div>
+                  <div style="font-size: 11px; color: #64748b;">✉️ ${project.projectManager.email}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trưởng phòng kỹ thuật -->
+            <div style="padding: 14px; background: white; border: 2px solid #d1fae5; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.06)'">
+              <div style="display: flex; align-items: start; gap: 10px;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0;">
+                  ${project.technicalLead.name.charAt(0)}
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${project.technicalLead.name}</div>
+                  <div style="font-size: 12px; color: #10b981; font-weight: 600; margin: 2px 0;">${project.technicalLead.position}</div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 4px;">📞 ${project.technicalLead.phone}</div>
+                  <div style="font-size: 11px; color: #64748b;">✉️ ${project.technicalLead.email}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kế toán trưởng -->
+            <div style="padding: 14px; background: white; border: 2px solid #e9d5ff; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.06)'">
+              <div style="display: flex; align-items: start; gap: 10px;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0;">
+                  ${project.accountant.name.charAt(0)}
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${project.accountant.name}</div>
+                  <div style="font-size: 12px; color: #8b5cf6; font-weight: 600; margin: 2px 0;">${project.accountant.position}</div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 4px;">📞 ${project.accountant.phone}</div>
+                  <div style="font-size: 11px; color: #64748b;">✉️ ${project.accountant.email}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Giám sát thi công -->
+            <div style="padding: 14px; background: white; border: 2px solid #fef3c7; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.06)'">
+              <div style="display: flex; align-items: start; gap: 10px;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0;">
+                  ${project.supervisor.name.charAt(0)}
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${project.supervisor.name}</div>
+                  <div style="font-size: 12px; color: #f59e0b; font-weight: 600; margin: 2px 0;">${project.supervisor.position}</div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 4px;">📞 ${project.supervisor.phone}</div>
+                  <div style="font-size: 11px; color: #64748b;">✉️ ${project.supervisor.email}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-kpi-grid">
+          <div class="detail-kpi-card">
+            <div class="detail-kpi-label">Ngân sách tổng</div>
+            <div class="detail-kpi-value">${formatCurrency(project.budget)}</div>
+            <div class="detail-kpi-sub">Tổng nguồn vốn dự án</div>
+          </div>
+          <div class="detail-kpi-card">
+            <div class="detail-kpi-label">Đã giải ngân</div>
+            <div class="detail-kpi-value" style="color: #10b981;">${formatCurrency(project.spent)}</div>
+            <div class="detail-kpi-sub">${((project.spent/project.budget)*100).toFixed(1)}% tổng ngân sách</div>
+          </div>
+          <div class="detail-kpi-card">
+            <div class="detail-kpi-label">Số gói thầu</div>
+            <div class="detail-kpi-value" style="color: #f59e0b;">${project.packages.length}</div>
+            <div class="detail-kpi-sub">Gói thầu đang triển khai</div>
+          </div>
+          <div class="detail-kpi-card">
+            <div class="detail-kpi-label">Tiến độ chung</div>
+            <div class="detail-kpi-value" style="color: #8b5cf6;">${project.progress}%</div>
+            <div class="detail-kpi-sub">${completedTasks}/${totalTasks}</div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('projectOverviewCard').innerHTML = overviewHTML;
+      
+      // Load default tab (Cost Management)
+      loadCostTab(project);
+    }
+
+    // Open Page 3 Tab
+    function openPage3Tab(evt, tabName) {
+      const projectId = document.getElementById('projectSelect').value;
+      const project = projectsData[projectId];
+      
+      // Update button states
+      const buttons = document.getElementsByClassName('page2-subtab-btn');
+      for (let btn of buttons) {
+        btn.classList.remove('active');
+      }
+      evt.currentTarget.classList.add('active');
+      
+      // Load content based on tab
+      if (tabName === 'costTab') {
+        loadCostTab(project);
+      } else if (tabName === 'scheduleTab') {
+        loadScheduleTab(project);
+      } else if (tabName === 'documentTab') {
+        loadDocumentTab(project);
+      }
+    }
+
+    // TAB 1: Quản lý Chi phí
+    function loadCostTab(project) {
+      const html = `
+        <!-- Tỷ trọng vốn -->
+        <div class="section">
+          <h3 class="section-title"><span class="section-icon">💰</span>Tỷ trọng nguồn vốn</h3>
+          
+          <!-- 4 Cards nguồn vốn -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            
+            <!-- 1. Vốn cấp không -->
+            <div style="padding: 20px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 5px solid #3b82f6; border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(59, 130, 246, 0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.2)'">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="font-size: 14px; font-weight: 700; color: #1e40af;">Vốn cấp không</div>
+                <span style="font-size: 24px;">🎁</span>
+              </div>
+              <div style="font-size: 28px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px;">${formatCurrency(project.budget * 0.05)}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; margin-bottom: 12px;">
+                <span style="font-size: 13px; color: #1e40af;">Tỷ trọng</span>
+                <strong style="font-size: 20px; color: #2563eb;">5.0%</strong>
+              </div>
+              
+              <!-- Progress bar giải ngân -->
+              <div style="margin-top: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                  <span style="font-size: 12px; color: #1e40af; font-weight: 600;">Đã giải ngân</span>
+                  <span style="font-size: 13px; color: #2563eb; font-weight: 800;">65.0%</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.5); border-radius: 999px; overflow: hidden;">
+                  <div style="height: 100%; width: 65%; background: linear-gradient(90deg, #3b82f6, #2563eb); border-radius: 999px; transition: width 1s ease-out;"></div>
+                </div>
+                <div style="margin-top: 6px; font-size: 11px; color: #1e40af;">
+                  Còn lại: <strong>${formatCurrency(project.budget * 0.05 * 0.35)}</strong>
+                </div>
+              </div>
+              
+              <div style="font-size: 12px; color: #1e40af; margin-top: 8px;">Viện trợ không hoàn lại</div>
+            </div>
+
+            <!-- 2. Vốn vay ODA -->
+            <div style="padding: 20px; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 5px solid #10b981; border-radius: 12px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.2)'">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="font-size: 14px; font-weight: 700; color: #065f46;">Vốn vay ODA</div>
+                <span style="font-size: 24px;">🌏</span>
+              </div>
+              <div style="font-size: 28px; font-weight: 800; color: #065f46; margin-bottom: 8px;">${formatCurrency(project.budget * 0.20)}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; margin-bottom: 12px;">
+                <span style="font-size: 13px; color: #065f46;">Tỷ trọng</span>
+                <strong style="font-size: 20px; color: #059669;">20.0%</strong>
+              </div>
+              
+              <!-- Progress bar giải ngân -->
+              <div style="margin-top: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                  <span style="font-size: 12px; color: #065f46; font-weight: 600;">Đã giải ngân</span>
+                  <span style="font-size: 13px; color: #059669; font-weight: 800;">48.5%</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.5); border-radius: 999px; overflow: hidden;">
+                  <div style="height: 100%; width: 48.5%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 999px; transition: width 1s ease-out;"></div>
+                </div>
+                <div style="margin-top: 6px; font-size: 11px; color: #065f46;">
+                  Còn lại: <strong>${formatCurrency(project.budget * 0.20 * 0.515)}</strong>
+                </div>
+              </div>
+              
+              <div style="font-size: 12px; color: #065f46; margin-top: 8px;">Vay ưu đãi quốc tế</div>
+            </div>
+
+            <!-- 3. Vốn NSNN (cha) -->
+            <div style="padding: 20px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b; border-radius: 12px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(245, 158, 11, 0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(245, 158, 11, 0.2)'">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="font-size: 14px; font-weight: 700; color: #92400e;">Vốn NSNN</div>
+                <span style="font-size: 24px;">🏛️</span>
+              </div>
+              <div style="font-size: 28px; font-weight: 800; color: #92400e; margin-bottom: 8px;">${formatCurrency(project.budget * 0.60)}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; margin-bottom: 12px;">
+                <span style="font-size: 13px; color: #92400e;">Tỷ trọng</span>
+                <strong style="font-size: 20px; color: #d97706;">60.0%</strong>
+              </div>
+              
+              <!-- Progress bar giải ngân -->
+              <div style="margin-top: 12px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                  <span style="font-size: 12px; color: #92400e; font-weight: 600;">Đã giải ngân</span>
+                  <span style="font-size: 13px; color: #d97706; font-weight: 800;">52.3%</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.5); border-radius: 999px; overflow: hidden;">
+                  <div style="height: 100%; width: 52.3%; background: linear-gradient(90deg, #f59e0b, #d97706); border-radius: 999px; transition: width 1s ease-out;"></div>
+                </div>
+                <div style="margin-top: 6px; font-size: 11px; color: #92400e;">
+                  Còn lại: <strong>${formatCurrency(project.budget * 0.60 * 0.477)}</strong>
+                </div>
+              </div>
+              
+              <!-- Sub-items NSNN với progress bars -->
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(255,255,255,0.5); border-radius: 8px;">
+                <div style="padding: 8px; background: white; border-radius: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 12px; color: #92400e; font-weight: 600;">• NS Trung ương (35%)</span>
+                    <strong style="font-size: 12px; color: #d97706;">55.0%</strong>
+                  </div>
+                  <div style="height: 6px; background: #fef3c7; border-radius: 999px; overflow: hidden;">
+                    <div style="height: 100%; width: 55%; background: linear-gradient(90deg, #f59e0b, #d97706); border-radius: 999px;"></div>
+                  </div>
+                </div>
+                <div style="padding: 8px; background: white; border-radius: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 12px; color: #92400e; font-weight: 600;">• NS Tỉnh (25%)</span>
+                    <strong style="font-size: 12px; color: #d97706;">48.0%</strong>
+                  </div>
+                  <div style="height: 6px; background: #fef3c7; border-radius: 999px; overflow: hidden;">
+                    <div style="height: 100%; width: 48%; background: linear-gradient(90deg, #fbbf24, #f59e0b); border-radius: 999px;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Vốn khác ngoài NSNN -->
+            <div style="padding: 20px; background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border-left: 5px solid #8b5cf6; border-radius: 12px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(139, 92, 246, 0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(139, 92, 246, 0.2)'">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="font-size: 14px; font-weight: 700; color: #6b21a8;">Vốn khác ngoài NSNN</div>
+                <span style="font-size: 24px;">💼</span>
+              </div>
+              <div style="font-size: 28px; font-weight: 800; color: #6b21a8; margin-bottom: 8px;">${formatCurrency(project.budget * 0.15)}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; margin-bottom: 12px;">
+                <span style="font-size: 13px; color: #6b21a8;">Tỷ trọng</span>
+                <strong style="font-size: 20px; color: #7c3aed;">15.0%</strong>
+              </div>
+              
+              <!-- Progress bar giải ngân -->
+              <div style="margin-top: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                  <span style="font-size: 12px; color: #6b21a8; font-weight: 600;">Đã giải ngân</span>
+                  <span style="font-size: 13px; color: #7c3aed; font-weight: 800;">42.0%</span>
+                </div>
+                <div style="height: 8px; background: rgba(255,255,255,0.5); border-radius: 999px; overflow: hidden;">
+                  <div style="height: 100%; width: 42%; background: linear-gradient(90deg, #8b5cf6, #7c3aed); border-radius: 999px; transition: width 1s ease-out;"></div>
+                </div>
+                <div style="margin-top: 6px; font-size: 11px; color: #6b21a8;">
+                  Còn lại: <strong>${formatCurrency(project.budget * 0.15 * 0.58)}</strong>
+                </div>
+              </div>
+              
+              <div style="font-size: 12px; color: #6b21a8; margin-top: 8px;">Vốn huy động hợp pháp</div>
+            </div>
+
+          </div>
+
+          <!-- Biểu đồ tròn tổng quan -->
+          <div style="background: white; padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            <h4 style="text-align: center; font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 20px;">Tổng quan cơ cấu nguồn vốn</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: center; justify-content: center;">
+              <!-- Pie chart placeholder -->
+              <div style="width: 280px; height: 280px;">
+                <canvas id="fundingPieChart"></canvas>
+              </div>
+              
+              <!-- Legend với thông tin giải ngân -->
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 4px;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 13px; color: #64748b;">Vốn cấp không</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #1e293b;">5.0% <span style="font-size: 12px; color: #3b82f6;">(GN: 65%)</span></div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 20px; height: 20px; background: #10b981; border-radius: 4px;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 13px; color: #64748b;">Vốn vay ODA</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #1e293b;">20.0% <span style="font-size: 12px; color: #10b981;">(GN: 48.5%)</span></div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 20px; height: 20px; background: #f59e0b; border-radius: 4px;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 13px; color: #64748b;">Vốn NSNN</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #1e293b;">60.0% <span style="font-size: 12px; color: #f59e0b;">(GN: 52.3%)</span></div>
+                  </div>
+                  <div style="margin-left: 10px; padding: 8px; background: #fef3c7; border-radius: 6px;">
+                    <div style="font-size: 11px; color: #92400e;">• TW: 35% (55%)</div>
+                    <div style="font-size: 11px; color: #92400e;">• Tỉnh: 25% (48%)</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 20px; height: 20px; background: #8b5cf6; border-radius: 4px;"></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 13px; color: #64748b;">Vốn khác ngoài NSNN</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #1e293b;">15.0% <span style="font-size: 12px; color: #8b5cf6;">(GN: 42%)</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tổng chi phí theo loại -->
+        <div class="section">
+          <h3 class="section-title"><span class="section-icon">📊</span>Tổng chi phí theo các loại</h3>
+          
+          <!-- Bar Chart Ngang -->
+          <div style="background: white; padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 24px;">
+            <canvas id="costBarChart" style="max-height: 350px;"></canvas>
+          </div>
+
+          <!-- Cards Chi tiết -->
+          <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b;">
+              <div class="kpi-label" style="color: #92400e; font-size: 13px;">GPMB</div>
+              <div class="kpi-value" style="color: #92400e; font-size: 24px;">${formatCurrency(project.spent * 0.08)}</div>
+              <div style="margin: 8px 0; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 6px;">
+                <div style="font-size: 18px; font-weight: 800; color: #d97706;">8.0%</div>
+                <div style="font-size: 11px; color: #92400e;">tổng chi phí</div>
+              </div>
+              <div class="kpi-subtext" style="color: #92400e;">Giải phóng MB</div>
+            </div>
+
+            <div class="kpi-card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981;">
+              <div class="kpi-label" style="color: #065f46; font-size: 13px;">Xây lắp</div>
+              <div class="kpi-value" style="color: #065f46; font-size: 24px;">${formatCurrency(project.spent * 0.50)}</div>
+              <div style="margin: 8px 0; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 6px;">
+                <div style="font-size: 18px; font-weight: 800; color: #059669;">50.0%</div>
+                <div style="font-size: 11px; color: #065f46;">tổng chi phí</div>
+              </div>
+              <div class="kpi-subtext" style="color: #065f46;">Chi phí xây lắp</div>
+            </div>
+
+            <div class="kpi-card" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: 2px solid #3b82f6;">
+              <div class="kpi-label" style="color: #1e40af; font-size: 13px;">Thiết bị</div>
+              <div class="kpi-value" style="color: #1e40af; font-size: 24px;">${formatCurrency(project.spent * 0.15)}</div>
+              <div style="margin: 8px 0; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 6px;">
+                <div style="font-size: 18px; font-weight: 800; color: #2563eb;">15.0%</div>
+                <div style="font-size: 11px; color: #1e40af;">tổng chi phí</div>
+              </div>
+              <div class="kpi-subtext" style="color: #1e40af;">Thiết bị chuyên dụng</div>
+            </div>
+
+            <div class="kpi-card" style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border: 2px solid #8b5cf6;">
+              <div class="kpi-label" style="color: #6b21a8; font-size: 13px;">Tư vấn</div>
+              <div class="kpi-value" style="color: #6b21a8; font-size: 24px;">${formatCurrency(project.spent * 0.12)}</div>
+              <div style="margin: 8px 0; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 6px;">
+                <div style="font-size: 18px; font-weight: 800; color: #7c3aed;">12.0%</div>
+                <div style="font-size: 11px; color: #6b21a8;">tổng chi phí</div>
+              </div>
+              <div class="kpi-subtext" style="color: #6b21a8;">Tư vấn & giám sát</div>
+            </div>
+
+            <div class="kpi-card" style="background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); border: 2px solid #f97316;">
+              <div class="kpi-label" style="color: #9a3412; font-size: 13px;">Quản lý</div>
+              <div class="kpi-value" style="color: #9a3412; font-size: 24px;">${formatCurrency(project.spent * 0.08)}</div>
+              <div style="margin: 8px 0; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 6px;">
+                <div style="font-size: 18px; font-weight: 800; color: #ea580c;">8.0%</div>
+                <div style="font-size: 11px; color: #9a3412;">tổng chi phí</div>
+              </div>
+              <div class="kpi-subtext" style="color: #9a3412;">Quản lý dự án</div>
+            </div>
+
+            <div class="kpi-card" style="background: linear-gradient(135deg, #fecdd3 0%, #fda4af 100%); border: 2px solid #f43f5e;">
+              <div class="kpi-label" style="color: #9f1239; font-size: 13px;">Chi khác</div>
+              <div class="kpi-value" style="color: #9f1239; font-size: 24px;">${formatCurrency(project.spent * 0.04)}</div>
+              <div style="margin: 8px 0; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 6px;">
+                <div style="font-size: 18px; font-weight: 800; color: #e11d48;">4.0%</div>
+                <div style="font-size: 11px; color: #9f1239;">tổng chi phí</div>
+              </div>
+              <div class="kpi-subtext" style="color: #9f1239;">Chi phí khác</div>
+            </div>
+
+            <div class="kpi-card" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #6366f1;">
+              <div class="kpi-label" style="color: #3730a3; font-size: 13px;">Dự phòng</div>
+              <div class="kpi-value" style="color: #3730a3; font-size: 24px;">${formatCurrency(project.spent * 0.03)}</div>
+              <div style="margin: 8px 0; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 6px;">
+                <div style="font-size: 18px; font-weight: 800; color: #4f46e5;">3.0%</div>
+                <div style="font-size: 11px; color: #3730a3;">tổng chi phí</div>
+              </div>
+              <div class="kpi-subtext" style="color: #3730a3;">Chi phí dự phòng</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng kê chi tiết gói thầu với heatmap -->
+        <div class="section">
+          <h3 class="section-title"><span class="section-icon">📋</span>Bảng kê chi tiết các gói thầu</h3>
+          <div id="page3CostTable"></div>
+        </div>
+      `;
+      
+      document.getElementById('page3TabContent').innerHTML = html;
+      
+      // Render heatmap table
+      setTimeout(() => {
+        renderPage3CostTable(project);
+        
+        // Render Cost Bar Chart với tỷ lệ mới
+        const ctx = document.getElementById('costBarChart');
+        if (ctx) {
+          const gpmb = project.spent * 0.08;     // Giải phóng mặt bằng 8%
+          const xl = project.spent * 0.50;       // Xây lắp 50%
+          const tb = project.spent * 0.15;       // Thiết bị 15%
+          const tv = project.spent * 0.12;       // Tư vấn 12%
+          const ql = project.spent * 0.08;       // Quản lý 8%
+          const chiKhac = project.spent * 0.04;  // Chi khác 4%
+          const duPhong = project.spent * 0.03;  // Dự phòng 3%
+          
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['GPMB', 'Xây lắp', 'Thiết bị', 'Tư vấn', 'Quản lý', 'Chi khác', 'Dự phòng'],
+              datasets: [{
+                label: 'Chi phí (tỷ đồng)',
+                data: [
+                  (gpmb / 1000000000).toFixed(2),
+                  (xl / 1000000000).toFixed(2),
+                  (tb / 1000000000).toFixed(2),
+                  (tv / 1000000000).toFixed(2),
+                  (ql / 1000000000).toFixed(2),
+                  (chiKhac / 1000000000).toFixed(2),
+                  (duPhong / 1000000000).toFixed(2)
+                ],
+                backgroundColor: [
+                  'rgba(245, 158, 11, 0.85)',   // GPMB - Vàng
+                  'rgba(16, 185, 129, 0.85)',   // Xây lắp - Xanh lá
+                  'rgba(59, 130, 246, 0.85)',   // Thiết bị - Xanh dương
+                  'rgba(139, 92, 246, 0.85)',   // Tư vấn - Tím
+                  'rgba(249, 115, 22, 0.85)',   // Quản lý - Cam đậm
+                  'rgba(244, 63, 94, 0.85)',    // Chi khác - Hồng
+                  'rgba(99, 102, 241, 0.85)'    // Dự phòng - Indigo
+                ],
+                borderColor: [
+                  '#f59e0b',
+                  '#10b981',
+                  '#3b82f6',
+                  '#8b5cf6',
+                  '#f97316',
+                  '#f43f5e',
+                  '#6366f1'
+                ],
+                borderWidth: 2,
+                borderRadius: 10
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                  padding: 12,
+                  titleFont: { size: 14, weight: 'bold' },
+                  bodyFont: { size: 13 },
+                  cornerRadius: 8,
+                  callbacks: {
+                    label: function(context) {
+                      const value = parseFloat(context.parsed.x);
+                      const total = context.dataset.data.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+                      const percent = ((value / total) * 100).toFixed(1);
+                      return context.label + ': ' + value.toFixed(2) + ' tỷ (' + percent + '%)';
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Chi phí (tỷ đồng)',
+                    font: { size: 14, weight: 'bold' },
+                    color: '#475569'
+                  },
+                  ticks: {
+                    callback: function(value) {
+                      return value.toFixed(0) + ' tỷ';
+                    },
+                    color: '#64748b',
+                    font: { size: 12, weight: '600' }
+                  },
+                  grid: {
+                    color: 'rgba(226, 232, 240, 0.5)'
+                  }
+                },
+                y: {
+                  ticks: {
+                    color: '#475569',
+                    font: { size: 13, weight: '700' }
+                  },
+                  grid: {
+                    display: false
+                  }
+                }
+              }
+            }
+          });
+        }
+        
+        // Render Funding Pie Chart
+        const pieCtx = document.getElementById('fundingPieChart');
+        if (pieCtx) {
+          new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Vốn cấp không (5%)', 'Vốn vay ODA (20%)', 'NS Trung ương (35%)', 'NS Tỉnh (25%)', 'Vốn khác (15%)'],
+              datasets: [{
+                data: [5, 20, 35, 25, 15],
+                backgroundColor: [
+                  'rgba(59, 130, 246, 0.9)',
+                  'rgba(16, 185, 129, 0.9)',
+                  'rgba(245, 158, 11, 0.9)',
+                  'rgba(251, 191, 36, 0.9)',
+                  'rgba(139, 92, 246, 0.9)'
+                ],
+                borderColor: [
+                  '#3b82f6',
+                  '#10b981',
+                  '#f59e0b',
+                  '#fbbf24',
+                  '#8b5cf6'
+                ],
+                borderWidth: 3,
+                hoverOffset: 15
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                  padding: 12,
+                  titleFont: { size: 14, weight: 'bold' },
+                  bodyFont: { size: 13 },
+                  cornerRadius: 8,
+                  callbacks: {
+                    label: function(context) {
+                      const value = context.parsed;
+                      const amount = (project.budget * value / 100 / 1000000000).toFixed(2);
+                      return context.label + ': ' + amount + ' tỷ';
+                    }
+                  }
+                }
+              },
+              cutout: '65%'
+            }
+          });
+        }
+      }, 100);
+    }
+
+    // TAB 2: Quản lý Tiến độ
+    function loadScheduleTab(project) {
+      const weeks = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5', 'Tuần 6', 'Tuần 7', 'Tuần 8'];
+      
+      const html = `
+        <!-- Khối lượng x Giá trị theo thời gian -->
+        <div class="section">
+          <h3 class="section-title"><span class="section-icon">📈</span>Khối lượng × Giá trị theo thời gian (Tháng 3/2026)</h3>
+          <div class="chart-container">
+            <div class="chart-wrapper">
+              <canvas id="scheduleChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng kế hoạch theo tuần -->
+        <div class="section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 class="section-title" style="margin: 0;"><span class="section-icon">📅</span>Kế hoạch & Thực hiện theo tuần (Tháng 3/2026)</h3>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="switchScheduleMetric('volume')" id="scheduleBtnVolume" class="view-toggle-btn active" style="padding: 6px 12px; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Khối lượng</button>
+              <button onclick="switchScheduleMetric('value')" id="scheduleBtnValue" class="view-toggle-btn" style="padding: 6px 12px; border: 1px solid #e2e8f0; background: white; color: #64748b; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Giá trị</button>
+            </div>
+          </div>
+          <div id="scheduleWeekTable"></div>
+        </div>
+
+        <!-- Khối lượng đạt & KH tuần tới -->
+        <div class="section">
+          <h3 class="section-title"><span class="section-icon">🎯</span>Khối lượng đạt & Kế hoạch tuần tới</h3>
+          <div class="package-detail-list">
+            ${project.packages.map(pkg => '<div class="package-detail-card"><div class="package-detail-header"><div><h4 class="package-detail-name">' + pkg.name + '</h4><div class="package-detail-code">' + pkg.code + '</div></div><div style="text-align: right;"><div style="font-size: 20px; font-weight: 800; color: #10b981;">' + pkg.progress + '%</div><div style="font-size: 12px; color: #6b7890;">Tiến độ hiện tại</div></div></div><div class="package-detail-meta"><div class="package-meta-item"><div class="package-meta-label">KL đã đạt (tuần này)</div><div class="package-meta-value" style="color: #10b981;">15</div></div><div class="package-meta-item"><div class="package-meta-label">Giá trị tương ứng</div><div class="package-meta-value" style="color: #3b82f6;">' + formatCurrency(pkg.spent * 0.05) + '</div></div><div class="package-meta-item"><div class="package-meta-label">KH tuần tới</div><div class="package-meta-value" style="color: #f59e0b;">18</div></div></div><div style="margin-top: 12px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid #3b82f6;"><div style="font-size: 12px; color: #1e40af; font-weight: 600;">📌 Công việc trọng tâm tuần tới:</div><ul style="margin: 8px 0 0 20px; font-size: 13px; color: #475569;"><li>Hoàn thành đổ bê tông móng</li><li>Kiểm tra nghiệm thu giai đoạn 1</li></ul></div></div>').join('')}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('page3TabContent').innerHTML = html;
+      
+      // Initialize schedule chart - BAR CHART với giá trị là cột
+      setTimeout(() => {
+        const ctx = document.getElementById('scheduleChart');
+        if (ctx) {
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
+              datasets: [
+                {
+                  label: 'Khối lượng (KL)',
+                  data: [45, 58, 72, 89],
+                  backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                  borderColor: '#10b981',
+                  borderWidth: 2,
+                  borderRadius: 8,
+                  yAxisID: 'y'
+                },
+                {
+                  label: 'Giá trị (tỷ)',
+                  data: [40, 52, 65, 80],
+                  backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                  borderColor: '#3b82f6',
+                  borderWidth: 2,
+                  borderRadius: 8,
+                  yAxisID: 'y1'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'top' }
+              },
+              scales: {
+                y: {
+                  type: 'linear',
+                  position: 'left',
+                  title: { display: true, text: 'Khối lượng', color: '#10b981', font: { weight: '600' } },
+                  ticks: { color: '#10b981' }
+                },
+                y1: {
+                  type: 'linear',
+                  position: 'right',
+                  title: { display: true, text: 'Giá trị (tỷ)', color: '#3b82f6', font: { weight: '600' } },
+                  grid: { drawOnChartArea: false },
+                  ticks: { color: '#3b82f6' }
+                }
+              }
+            }
+          });
+        }
+        
+        // Render week table
+        renderScheduleWeekTable(project, 'volume');
+      }, 100);
+    }
+
+    // TAB 3: Quản lý Hồ sơ
+    function loadDocumentTab(project) {
+      const html = `
+        <!-- Giai đoạn 1: Chuẩn bị đầu tư -->
+        <div class="section">
+          <h3 class="section-title"><span class="section-icon">📝</span>Giai đoạn 1: Chuẩn bị đầu tư</h3>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 50px;">STT</th>
+                  <th>Tên quyết định / Hồ sơ</th>
+                  <th>Số quyết định</th>
+                  <th>Ngày ban hành</th>
+                  <th>Người ký</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td><strong>Quyết định đầu tư dự án</strong></td>
+                  <td>QĐ-123/2025</td>
+                  <td>15/01/2025</td>
+                  <td>Chủ tịch UBND</td>
+                  <td><span class="status st-done">Đã ban hành</span></td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td><strong>Phê duyệt dự án</strong></td>
+                  <td>QĐ-145/2025</td>
+                  <td>28/01/2025</td>
+                  <td>Giám đốc Sở</td>
+                  <td><span class="status st-done">Đã ban hành</span></td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td><strong>Phê duyệt thiết kế bản vẽ thi công</strong></td>
+                  <td>QĐ-178/2025</td>
+                  <td>12/02/2025</td>
+                  <td>Giám đốc Ban QLDA</td>
+                  <td><span class="status st-done">Đã ban hành</span></td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td><strong>Phê duyệt dự toán</strong></td>
+                  <td>QĐ-189/2025</td>
+                  <td>25/02/2025</td>
+                  <td>Giám đốc Ban QLDA</td>
+                  <td><span class="status st-done">Đã ban hành</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Giai đoạn 2: Thi công -->
+        <div class="section">
+          <h3 class="section-title"><span class="section-icon">🏗️</span>Giai đoạn 2: Triển khai thi công</h3>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 50px;">STT</th>
+                  <th>Tên hồ sơ / Biên bản</th>
+                  <th>Số văn bản</th>
+                  <th>Ngày lập</th>
+                  <th>Người thực hiện</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td><strong>Biên bản bàn giao mặt bằng</strong></td>
+                  <td>BB-01/2025</td>
+                  <td>05/03/2025</td>
+                  <td>Tổ giám sát</td>
+                  <td><span class="status st-done">Hoàn thành</span></td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td><strong>Biên bản khảo sát địa chất</strong></td>
+                  <td>BB-02/2025</td>
+                  <td>10/03/2025</td>
+                  <td>Đơn vị tư vấn</td>
+                  <td><span class="status st-done">Hoàn thành</span></td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td><strong>Nhật ký thi công tháng 3</strong></td>
+                  <td>NK-03/2026</td>
+                  <td>Hàng ngày</td>
+                  <td>Giám sát thi công</td>
+                  <td><span class="status st-doing">Đang cập nhật</span></td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td><strong>Biên bản nghiệm thu giai đoạn móng</strong></td>
+                  <td>BB-NT-01/2026</td>
+                  <td>20/03/2026</td>
+                  <td>Hội đồng NT</td>
+                  <td><span class="status st-doing">Đang thực hiện</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Giai đoạn 3: Nghiệm thu thanh toán -->
+        <div class="section">
+          <h3 class="section-title"><span class="section-icon">✅</span>Giai đoạn 3: Nghiệm thu thanh toán</h3>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 50px;">STT</th>
+                  <th>Hồ sơ thanh toán</th>
+                  <th>Gói thầu</th>
+                  <th>Giá trị (tỷ)</th>
+                  <th>Ngày nộp</th>
+                  <th>Ngày duyệt</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td><strong>Hồ sơ thanh toán đợt 1</strong></td>
+                  <td>${project.packages[0].name.substring(0, 25)}...</td>
+                  <td>${formatCurrency(project.packages[0].spent * 0.3)}</td>
+                  <td>15/03/2026</td>
+                  <td>22/03/2026</td>
+                  <td><span class="status st-done">Đã thanh toán</span></td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td><strong>Hồ sơ thanh toán đợt 2</strong></td>
+                  <td>${project.packages[1].name.substring(0, 25)}...</td>
+                  <td>${formatCurrency(project.packages[1].spent * 0.3)}</td>
+                  <td>15/03/2026</td>
+                  <td>22/03/2026</td>
+                  <td><span class="status st-done">Đã thanh toán</span></td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td><strong>Hồ sơ thanh toán đợt 3</strong></td>
+                  <td>${project.packages[2].name.substring(0, 25)}...</td>
+                  <td>${formatCurrency(project.packages[2].spent * 0.3)}</td>
+                  <td>28/03/2026</td>
+                  <td>-</td>
+                  <td><span class="status st-doing">Đang thẩm định</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('page3TabContent').innerHTML = html;
+    }
+
+    // Charts for Page 1
+    let workVolumeChart, budgetTimeChart;
+    function initPage1Charts() {
+      // Work Volume Chart (Khối lượng theo thời gian)
+      const workCtx = document.getElementById('workVolumeChart');
+      if (workCtx && !workVolumeChart) {
+        workVolumeChart = new Chart(workCtx, {
+          type: 'bar',
+          data: {
+            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+            datasets: [
+              {
+                label: 'KH Công việc',
+                data: [28, 32, 35, 38, 42, 45, 48, 52, 55, 58, 62, 65],
+                backgroundColor: 'rgba(59, 130, 246, 0.3)',
+                borderColor: '#3b82f6',
+                borderWidth: 2,
+                borderRadius: 6,
+                yAxisID: 'y'
+              },
+              {
+                label: 'TT Công việc',
+                data: [26, 30, 33, 35, 38, 41, 43, 46, 48, 51, 53, 56],
+                backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                borderColor: '#10b981',
+                borderWidth: 2,
+                borderRadius: 6,
+                yAxisID: 'y'
+              },
+              {
+                label: '% Tỷ lệ đạt',
+                data: [92.9, 93.8, 94.3, 92.1, 90.5, 91.1, 89.6, 88.5, 87.3, 87.9, 85.5, 86.2],
+                type: 'line',
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#f59e0b',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                yAxisID: 'y1'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false
+            },
+            plugins: {
+              legend: { 
+                position: 'top',
+                labels: {
+                  font: { size: 12, weight: '600' },
+                  padding: 15,
+                  usePointStyle: true
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                titleColor: '#1f2a44',
+                bodyColor: '#6b7890',
+                borderColor: '#e6ebf2',
+                borderWidth: 1,
+                padding: 12,
+                displayColors: true
+              }
+            },
+            scales: {
+              y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Số',
+                  font: { size: 12, weight: '600' }
+                },
+                grid: {
+                  color: '#e6ebf2'
+                },
+                ticks: {
+                  color: '#6b7890'
+                }
+              },
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                min: 0,
+                max: 100,
+                title: {
+                  display: true,
+                  text: '% Đạt',
+                  font: { size: 12, weight: '600' }
+                },
+                grid: {
+                  drawOnChartArea: false
+                },
+                ticks: {
+                  color: '#6b7890',
+                  callback: (value) => value + '%'
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#6b7890'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Budget Time Chart (Ngân sách theo thời gian)
+      const budgetCtx = document.getElementById('budgetTimeChart');
+      if (budgetCtx && !budgetTimeChart) {
+        budgetTimeChart = new Chart(budgetCtx, {
+          type: 'line',
+          data: {
+            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+            datasets: [
+              {
+                label: 'Kế hoạch giải ngân',
+                data: [80, 160, 240, 320, 400, 480, 560, 640, 720, 800, 880, 960],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#3b82f6',
+                fill: false
+              },
+              {
+                label: 'Thực tế giải ngân',
+                data: [75, 155, 235, 310, 385, 465, 540, 610, 680, 745, 810, 870],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                fill: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false
+            },
+            plugins: {
+              legend: { 
+                position: 'top',
+                labels: {
+                  font: { size: 12, weight: '600' },
+                  padding: 15,
+                  usePointStyle: true
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                titleColor: '#1f2a44',
+                bodyColor: '#6b7890',
+                borderColor: '#e6ebf2',
+                borderWidth: 1,
+                padding: 12,
+                callbacks: {
+                  label: (context) => {
+                    return context.dataset.label + ': ' + context.parsed.y + ' tỷ VNĐ';
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Giá trị (tỷ VNĐ)',
+                  font: { size: 12, weight: '600' }
+                },
+                grid: {
+                  color: '#e6ebf2'
+                },
+                ticks: {
+                  color: '#6b7890',
+                  callback: (value) => value + ' tỷ'
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#6b7890'
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // Charts for Page 2 - No charts needed anymore
+    function initPage2Charts() {
+      // Page 2 now uses tables and Gantt chart instead of charts
+      console.log('Page 2 loaded - using tables and Gantt chart');
+    }
+
+    // Heatmap color generator - IMPROVED
+    function getHeatmapColor(value, max) {
+      if (value === 0) return '#fafafa';
+      const ratio = value / max;
+      
+      // Gradient 5 cấp màu đẹp hơn
+      if (ratio >= 0.8) {
+        // Rất cao - Xanh lá đậm với gradient
+        const intensity = 0.3 + (ratio - 0.8) * 3.5;
+        return 'linear-gradient(135deg, rgba(16, 185, 129, ' + intensity + '), rgba(5, 150, 105, ' + (intensity + 0.1) + '))';
+      } else if (ratio >= 0.6) {
+        // Cao - Xanh lá nhạt
+        const intensity = 0.25 + (ratio - 0.6) * 2.5;
+        return 'linear-gradient(135deg, rgba(52, 211, 153, ' + intensity + '), rgba(16, 185, 129, ' + (intensity + 0.1) + '))';
+      } else if (ratio >= 0.4) {
+        // Trung bình - Xanh dương
+        const intensity = 0.2 + (ratio - 0.4) * 2;
+        return 'linear-gradient(135deg, rgba(96, 165, 250, ' + intensity + '), rgba(59, 130, 246, ' + (intensity + 0.1) + '))';
+      } else if (ratio >= 0.2) {
+        // Thấp - Vàng cam
+        const intensity = 0.15 + (ratio - 0.2) * 1.5;
+        return 'linear-gradient(135deg, rgba(251, 191, 36, ' + intensity + '), rgba(245, 158, 11, ' + (intensity + 0.1) + '))';
+      } else {
+        // Rất thấp - Cam nhạt
+        const intensity = 0.1 + ratio * 0.5;
+        return 'linear-gradient(135deg, rgba(254, 215, 170, ' + intensity + '), rgba(253, 186, 116, ' + (intensity + 0.1) + '))';
+      }
+    }
+
+    // Cost data for Page 2
+    const costData = {
+      projects: [
+        {
+          id: 1,
+          name: 'Bệnh viện Cẩm Xuyên',
+          code: 'DA-7946312',
+          total: 123.5,
+          construction: 91.6,
+          equipment: 18.5,
+          consulting: 7.4,
+          insurance: 3.7,
+          other: 2.5,
+          packages: [
+            { name: 'GT nhà khám bệnh', construction: 39.2, equipment: 8, consulting: 3.2, insurance: 1.6, other: 1, total: 53 },
+            { name: 'GT nhà điều trị nội trú', construction: 30.6, equipment: 6.2, consulting: 2.5, insurance: 1.2, other: 0.7, total: 41.2 },
+            { name: 'GT trang thiết bị y tế', construction: 15.2, equipment: 3.1, consulting: 1.2, insurance: 0.6, other: 0.4, total: 20.5 },
+            { name: 'GT hạ tầng kỹ thuật', construction: 6.6, equipment: 1.2, consulting: 0.5, insurance: 0.3, other: 0.4, total: 8.8 }
+          ]
+        },
+        {
+          id: 2,
+          name: 'Y tế cơ sở vùng KK',
+          code: 'DA-8028364',
+          total: 82.56,
+          construction: 64.4,
+          equipment: 12.4,
+          consulting: 5.0,
+          insurance: 2.5,
+          other: 1.7,
+          packages: [
+            { name: 'GT trạm y tế xã', construction: 37.3, equipment: 7.6, consulting: 3, insurance: 1.5, other: 1, total: 50.4 },
+            { name: 'GT trang thiết bị y tế', construction: 14.9, equipment: 3, consulting: 1.2, insurance: 0.6, other: 0.5, total: 20.16 },
+            { name: 'GT đường giao thông', construction: 8.9, equipment: 1.8, consulting: 0.7, insurance: 0.4, other: 0.2, total: 12 }
+          ]
+        },
+        {
+          id: 3,
+          name: 'Đường Đức Thọ - Trần Phú',
+          code: 'DA-7941294',
+          total: 17.1,
+          construction: 1.7,
+          equipment: 0,
+          consulting: 14.5,
+          insurance: 0.5,
+          other: 0.3,
+          packages: [
+            { name: 'GT tư vấn thiết kế', construction: 0, equipment: 0, consulting: 7.7, insurance: 0.5, other: 0.3, total: 8.55 },
+            { name: 'GT giải phóng MB', construction: 1.7, equipment: 0, consulting: 3.4, insurance: 0.3, other: 0.3, total: 5.7 },
+            { name: 'GT xây mặt đường', construction: 0, equipment: 0, consulting: 2.6, insurance: 0, other: 0.3, total: 2.85 }
+          ]
+        }
+      ]
+    };
+
+    // Switch cost view mode
+    function switchCostView(mode) {
+      ['Value', 'Percent', 'Budget'].forEach(m => {
+        const btn = document.getElementById('costBtn' + m);
+        if (btn) {
+          btn.style.background = 'white';
+          btn.style.color = '#64748b';
+          btn.style.borderColor = '#e2e8f0';
+        }
+      });
+      const activeBtn = document.getElementById('costBtn' + mode.charAt(0).toUpperCase() + mode.slice(1));
+      if (activeBtn) {
+        activeBtn.style.background = '#3b82f6';
+        activeBtn.style.color = 'white';
+        activeBtn.style.borderColor = '#3b82f6';
+      }
+      renderCostTable(mode);
+    }
+
+    // Render cost table with heatmap
+    function renderCostTable(mode) {
+      const maxValues = {
+        construction: Math.max(...costData.projects.map(p => p.construction)),
+        equipment: Math.max(...costData.projects.map(p => p.equipment)),
+        consulting: Math.max(...costData.projects.map(p => p.consulting)),
+        insurance: Math.max(...costData.projects.map(p => p.insurance)),
+        other: Math.max(...costData.projects.map(p => p.other))
+      };
+
+      let html = '<div style="overflow-x: auto;"><table style="border-collapse: separate; border-spacing: 0;"><thead><tr><th style="width: 30px;"></th><th>Dự án / Gói thầu</th><th>Xây dựng</th><th>Thiết bị</th><th>Tư vấn</th><th>Bảo hiểm</th><th>Chi phí khác</th><th>Tổng cộng</th></tr></thead><tbody>';
+
+      costData.projects.forEach(project => {
+        const budget = project.total / 0.615 * 1000000000;
+        html += '<tr class="project-row" onclick="toggleCostPackages(' + project.id + ')" style="cursor: pointer; background: #f8fbff;"><td style="text-align: center; font-size: 16px;">▶</td><td><strong>' + project.name + '</strong><br><small style="color: #6b7890;">' + project.code + '</small></td>';
+        
+        ['construction', 'equipment', 'consulting', 'insurance', 'other'].forEach(type => {
+          const value = project[type];
+          let display, bgColor;
+          
+          if (mode === 'value') {
+            display = value.toFixed(1) + ' tỷ';
+            bgColor = getHeatmapColor(value, maxValues[type]);
+          } else if (mode === 'percent') {
+            const pct = (value / project.total * 100).toFixed(1);
+            display = pct + '%';
+            bgColor = getHeatmapColor(parseFloat(pct), 100);
+          } else {
+            const pct = (value * 1000000000 / budget * 100).toFixed(1);
+            display = pct + '%';
+            bgColor = getHeatmapColor(parseFloat(pct), 100);
+          }
+          
+          html += '<td style="background: ' + bgColor + '; font-weight: 700; color: #1e293b; border-radius: 6px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);"><div>' + display + '</div></td>';
+        });
+        
+        html += '<td><strong style="color: #1f6feb;">' + project.total + ' tỷ</strong></td></tr>';
+
+        project.packages.forEach(pkg => {
+          html += '<tr class="cost-package-row" data-parent="' + project.id + '" style="display: none; background: #f0f5fb;"><td></td><td style="padding-left: 25px; font-size: 13px;">└ ' + pkg.name + '</td>';
+          
+          ['construction', 'equipment', 'consulting', 'insurance', 'other'].forEach(type => {
+            const value = pkg[type];
+            let display;
+            
+            if (mode === 'value') {
+              display = value + ' tỷ';
+            } else if (mode === 'percent') {
+              display = (value / pkg.total * 100).toFixed(1) + '%';
+            } else {
+              display = (value * 1000000000 / budget * 100).toFixed(2) + '%';
+            }
+            
+            html += '<td style="font-weight: 600; color: #475569;">' + display + '</td>';
+          });
+          
+          html += '<td>' + pkg.total + ' tỷ</td></tr>';
+        });
+      });
+
+      html += '<tr style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); font-weight: 700; box-shadow: 0 -2px 4px rgba(0,0,0,0.05);"><td></td><td><strong>TỔNG CỘNG</strong></td><td><strong style="color: #10b981;">157.7 tỷ</strong></td><td><strong>30.9 tỷ</strong></td><td><strong>26.9 tỷ</strong></td><td><strong>6.7 tỷ</strong></td><td><strong>4.5 tỷ</strong></td><td><strong style="color: #1f6feb;">226.7 tỷ</strong></td></tr>';
+      html += '</tbody></table></div>';
+
+      const container = document.getElementById('costTableContainer');
+      if (container) {
+        container.innerHTML = html;
+      }
+    }
+
+    // Initialize on load
+    window.onload = function() {
+      initPage1Charts();
+      loadProjectDetail('1');
+      setTimeout(() => {
+        if (document.getElementById('costTableContainer')) {
+          renderCostTable('value');
+        }
+      }, 500);
+    };
+
+    // Render Page 3 Cost Table with Heatmap
+    function renderPage3CostTable(project) {
+      const maxValues = {
+        gpmb: Math.max(...project.packages.map(p => p.spent * 0.08)),
+        xl: Math.max(...project.packages.map(p => p.spent * 0.50)),
+        tb: Math.max(...project.packages.map(p => p.spent * 0.15)),
+        tv: Math.max(...project.packages.map(p => p.spent * 0.12)),
+        ql: Math.max(...project.packages.map(p => p.spent * 0.08)),
+        chiKhac: Math.max(...project.packages.map(p => p.spent * 0.04)),
+        duPhong: Math.max(...project.packages.map(p => p.spent * 0.03))
+      };
+
+      let html = '<div style="overflow-x: auto;"><table style="border-collapse: separate; border-spacing: 0 8px;"><thead><tr><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">Gói thầu</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Ngân sách</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">GPMB</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Xây lắp</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Thiết bị</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Tư vấn</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Quản lý</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Chi khác</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Dự phòng</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Đã GN</th><th style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">Tỷ lệ GN</th></tr></thead><tbody>';
+
+      project.packages.forEach((pkg, idx) => {
+        const values = {
+          gpmb: pkg.spent * 0.08,
+          xl: pkg.spent * 0.50,
+          tb: pkg.spent * 0.15,
+          tv: pkg.spent * 0.12,
+          ql: pkg.spent * 0.08,
+          chiKhac: pkg.spent * 0.04,
+          duPhong: pkg.spent * 0.03
+        };
+
+        html += '<tr style="box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s;"><td style="background: white; border-radius: 8px 0 0 8px; padding: 12px;"><strong>' + pkg.name + '</strong><br><small style="color: #6b7890; font-weight: 600;">' + pkg.code + '</small></td><td style="background: white; font-weight: 600; color: #475569;">' + formatCurrency(pkg.budget) + '</td>';
+        
+        // GPMB
+        const bgColorGpmb = getHeatmapColor(values.gpmb, maxValues.gpmb);
+        html += '<td style="background: ' + bgColorGpmb + '; font-weight: 800; color: #92400e; text-align: center;">' + formatCurrency(values.gpmb) + '</td>';
+        
+        // Xây lắp
+        const bgColorXl = getHeatmapColor(values.xl, maxValues.xl);
+        html += '<td style="background: ' + bgColorXl + '; font-weight: 800; color: #065f46; text-align: center;">' + formatCurrency(values.xl) + '</td>';
+        
+        // Thiết bị
+        const bgColorTb = getHeatmapColor(values.tb, maxValues.tb);
+        html += '<td style="background: ' + bgColorTb + '; font-weight: 800; color: #1e40af; text-align: center;">' + formatCurrency(values.tb) + '</td>';
+        
+        // Tư vấn
+        const bgColorTv = getHeatmapColor(values.tv, maxValues.tv);
+        html += '<td style="background: ' + bgColorTv + '; font-weight: 800; color: #6b21a8; text-align: center;">' + formatCurrency(values.tv) + '</td>';
+        
+        // Quản lý
+        const bgColorQl = getHeatmapColor(values.ql, maxValues.ql);
+        html += '<td style="background: ' + bgColorQl + '; font-weight: 800; color: #9a3412; text-align: center;">' + formatCurrency(values.ql) + '</td>';
+        
+        // Chi khác
+        const bgColorCk = getHeatmapColor(values.chiKhac, maxValues.chiKhac);
+        html += '<td style="background: ' + bgColorCk + '; font-weight: 800; color: #9f1239; text-align: center;">' + formatCurrency(values.chiKhac) + '</td>';
+        
+        // Dự phòng
+        const bgColorDp = getHeatmapColor(values.duPhong, maxValues.duPhong);
+        html += '<td style="background: ' + bgColorDp + '; font-weight: 800; color: #3730a3; text-align: center;">' + formatCurrency(values.duPhong) + '</td>';
+        
+        const gnPercent = ((pkg.spent/pkg.budget)*100).toFixed(1);
+        let gnColor = '#ef4444';
+        if (gnPercent >= 80) gnColor = '#10b981';
+        else if (gnPercent >= 60) gnColor = '#3b82f6';
+        else if (gnPercent >= 40) gnColor = '#f59e0b';
+        
+        html += '<td style="background: white; font-weight: 700;"><strong style="color: #10b981;">' + formatCurrency(pkg.spent) + '</strong></td><td style="background: white; border-radius: 0 8px 8px 0; padding: 12px;"><div style="display: flex; align-items: center; gap: 10px;"><div style="flex: 1; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);"><div style="height: 100%; width: ' + gnPercent + '%; background: linear-gradient(90deg, ' + gnColor + ', ' + gnColor + 'dd); border-radius: 999px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></div></div><strong style="font-size: 14px; color: ' + gnColor + '; min-width: 45px; text-align: right;">' + gnPercent + '%</strong></div></td></tr>';
+      });
+
+      // Tổng cộng với 7 loại chi phí mới
+      const totalGpmb = project.spent * 0.08;
+      const totalXl = project.spent * 0.50;
+      const totalTb = project.spent * 0.15;
+      const totalTv = project.spent * 0.12;
+      const totalQl = project.spent * 0.08;
+      const totalChiKhac = project.spent * 0.04;
+      const totalDuPhong = project.spent * 0.03;
+
+      html += '<tr style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); font-weight: 800; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 8px;"><td style="border-radius: 8px 0 0 8px; padding: 16px;"><strong style="font-size: 15px;">TỔNG CỘNG</strong></td><td><strong>' + formatCurrency(project.budget) + '</strong></td><td><strong style="color: #f59e0b; font-size: 14px;">' + formatCurrency(totalGpmb) + '</strong></td><td><strong style="color: #10b981; font-size: 14px;">' + formatCurrency(totalXl) + '</strong></td><td><strong style="color: #3b82f6; font-size: 14px;">' + formatCurrency(totalTb) + '</strong></td><td><strong style="color: #8b5cf6; font-size: 14px;">' + formatCurrency(totalTv) + '</strong></td><td><strong style="color: #f97316; font-size: 14px;">' + formatCurrency(totalQl) + '</strong></td><td><strong style="color: #f43f5e; font-size: 14px;">' + formatCurrency(totalChiKhac) + '</strong></td><td><strong style="color: #6366f1; font-size: 14px;">' + formatCurrency(totalDuPhong) + '</strong></td><td><strong style="color: #10b981; font-size: 15px;">' + formatCurrency(project.spent) + '</strong></td><td style="border-radius: 0 8px 8px 0;"><strong style="color: #1f6feb; font-size: 15px;">' + ((project.spent/project.budget)*100).toFixed(1) + '%</strong></td></tr>';
+      html += '</tbody></table></div>';
+
+      const container = document.getElementById('page3CostTable');
+      if (container) {
+        container.innerHTML = html;
+      }
+    }
+
+    // Switch schedule metric
+    function switchScheduleMetric(metric) {
+      ['Volume', 'Value'].forEach(m => {
+        const btn = document.getElementById('scheduleBtn' + m);
+        if (btn) {
+          btn.style.background = 'white';
+          btn.style.color = '#64748b';
+          btn.style.borderColor = '#e2e8f0';
+        }
+      });
+      const activeBtn = document.getElementById('scheduleBtn' + metric.charAt(0).toUpperCase() + metric.slice(1));
+      if (activeBtn) {
+        activeBtn.style.background = '#3b82f6';
+        activeBtn.style.color = 'white';
+        activeBtn.style.borderColor = '#3b82f6';
+      }
+      
+      const projectId = document.getElementById('projectSelect').value;
+      const project = projectsData[projectId];
+      renderScheduleWeekTable(project, metric);
+    }
+
+    // Render schedule week table
+    function renderScheduleWeekTable(project, metric) {
+      const weeks = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5', 'Tuần 6', 'Tuần 7', 'Tuần 8'];
+      
+      let html = '<div style="overflow-x: auto;"><table style="font-size: 13px;"><thead><tr><th style="width: 180px;">Gói thầu</th>';
+      weeks.forEach(w => html += '<th style="min-width: 80px;">' + w + '</th>');
+      html += '<th>Tổng</th></tr></thead><tbody>';
+
+      project.packages.forEach(pkg => {
+        const weeklyValues = [12, 15, 18, 14, 16, 19, 17, 15];
+        const total = weeklyValues.reduce((a, b) => a + b, 0);
+        
+        html += '<tr><td><strong>' + pkg.name.substring(0, 30) + '...</strong></td>';
+        
+        weeklyValues.forEach(v => {
+          if (metric === 'volume') {
+            html += '<td><div style="font-weight: 600; color: #10b981;">' + v + '</div></td>';
+          } else {
+            html += '<td><div style="font-weight: 600; color: #3b82f6;">' + (v * 0.9).toFixed(1) + ' tỷ</div></td>';
+          }
+        });
+        
+        if (metric === 'volume') {
+          html += '<td style="background: #f8fbff;"><strong style="color: #1f6feb;">' + total + '</strong></td>';
+        } else {
+          html += '<td style="background: #f8fbff;"><strong style="color: #1f6feb;">' + (total * 0.9).toFixed(1) + ' tỷ</strong></td>';
+        }
+        
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+
+      const container = document.getElementById('scheduleWeekTable');
+      if (container) {
+        container.innerHTML = html;
+      }
+    }
+  </script>
+</body>
+</html>
